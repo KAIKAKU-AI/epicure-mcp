@@ -62,9 +62,15 @@ def register_all(server: FastMCP) -> None:
         ingredients: list[str] | str,
         is_vegan: bool = False,
         is_vegetarian: bool = False,
+        allergen_free: list[str] | None = None,
     ) -> Any:
         return _wrap_result(
-            find_pairings.run(ingredients, is_vegan=is_vegan, is_vegetarian=is_vegetarian)
+            find_pairings.run(
+                ingredients,
+                is_vegan=is_vegan,
+                is_vegetarian=is_vegetarian,
+                allergen_free=allergen_free,
+            )
         )
 
     @server.tool(

@@ -71,13 +71,23 @@ def _has_word_overlap(candidate_name: str, seed_names: list[str]) -> bool:
 
 
 def _meets_dietary(
-    ing: IngredientData, node_id: int, is_vegan: bool, is_vegetarian: bool
+    ing: IngredientData,
+    node_id: int,
+    is_vegan: bool,
+    is_vegetarian: bool,
+    allergen_free: list[str] | None = None,
 ) -> bool:
-    if not (is_vegan or is_vegetarian):
+    if not (is_vegan or is_vegetarian) and not allergen_free:
         return True
-    if is_vegan:
-        return ing.is_vegan.get(node_id, False)
-    return ing.is_vegetarian.get(node_id, False)
+    if is_vegan and not ing.is_vegan.get(node_id, False):
+        return False
+    if is_vegetarian and not ing.is_vegetarian.get(node_id, False):
+        return False
+    if allergen_free:
+        for name in allergen_free:
+            if ing.allergen_free.get(name, {}).get(node_id, True) is False:
+                return False
+    return True
 
 
 @dataclass
@@ -136,6 +146,7 @@ def _build_request_filters(
     has_meat: bool,
     has_sweet: bool,
     has_fat: bool,
+    allergen_free: list[str] | None = None,
 ) -> _RequestFilters:
     n = ing.normed.shape[0]
     score_mul = np.ones(n, dtype=np.float32)
@@ -149,12 +160,20 @@ def _build_request_filters(
     dietary_active = is_vegan or is_vegetarian
     flags_map = ing.is_vegan if is_vegan else ing.is_vegetarian
     penalties_active = has_meat or has_sweet or has_fat
+    allergen_active = bool(allergen_free)
 
     for i in range(n):
         node_id = int(ing.node_ids[i])
         if dietary_active and not flags_map.get(node_id, False):
             forbidden[i] = True
             continue
+        if allergen_active:
+            for name in allergen_free:  # type: ignore[union-attr]
+                if ing.allergen_free.get(name, {}).get(node_id, True) is False:
+                    forbidden[i] = True
+                    break
+            if forbidden[i]:
+                continue
         if seed_words:
             cand_words = set(str(ing.names[i]).lower().replace("_", " ").split())
             if cand_words & seed_words:
@@ -219,6 +238,7 @@ def build_graph(
     *,
     is_vegan: bool = False,
     is_vegetarian: bool = False,
+    allergen_free: list[str] | None = None,
     max_primary_nodes: int = 8,
     max_secondary_nodes: int = 8,
 ) -> PairingGraph:
@@ -239,6 +259,7 @@ def build_graph(
     # One vocabulary-wide pass; reused for every centroid below.
     filters = _build_request_filters(
         ing, seed_names, is_vegan, is_vegetarian, has_meat, has_sweet, has_fat,
+        allergen_free=allergen_free,
     )
 
     seed_vecs = ing.normed[seed_rows]
@@ -481,6 +502,7 @@ def find_pairings(
     *,
     is_vegan: bool = False,
     is_vegetarian: bool = False,
+    allergen_free: list[str] | None = None,
     max_primary_nodes: int = 8,
     max_secondary_nodes: int = 8,
 ) -> dict[str, Any]:
@@ -507,6 +529,7 @@ def find_pairings(
         resolved_names,
         is_vegan=is_vegan,
         is_vegetarian=is_vegetarian,
+        allergen_free=allergen_free,
         max_primary_nodes=max_primary_nodes,
         max_secondary_nodes=max_secondary_nodes,
     )

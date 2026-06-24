@@ -26,8 +26,12 @@ DESCRIPTION = (
     "'interesting' or 'unexpected' recipes). Category penalties keep "
     "the graph diverse (no meat-on-meat / sweet-on-sweet stacking). "
     "Pass is_vegan or is_vegetarian to filter dietary-incompatible "
-    "ingredients out. Always prefer this tool over morph or neighbors "
-    "when the user has not explicitly named a direction or transform."
+    "ingredients out. Pass allergen_free with a list of EU allergen names "
+    "(gluten, crustacean, egg, fish, peanut, soy, lactose, nut, celery, "
+    "mustard, sesame, sulfite, lupin, mollusc) to filter out ingredients "
+    "containing those allergens. Always prefer this tool over morph or "
+    "neighbors when the user has not explicitly named a direction or "
+    "transform."
 )
 
 
@@ -36,6 +40,7 @@ def run(
     *,
     is_vegan: bool = False,
     is_vegetarian: bool = False,
+    allergen_free: list[str] | None = None,
 ) -> str:
     if isinstance(ingredients, str):
         ingredients = [ingredients]
@@ -45,6 +50,7 @@ def run(
         list(ingredients),
         is_vegan=is_vegan,
         is_vegetarian=is_vegetarian,
+        allergen_free=allergen_free,
     )
     if "error" in result:
         return f"Error: {result['error']}"

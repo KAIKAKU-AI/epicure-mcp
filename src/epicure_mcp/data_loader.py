@@ -32,6 +32,7 @@ class IngredientData:
     is_vegetarian: dict[int, bool]
     cuisine_region: dict[int, str]
     nova_level: dict[int, float]
+    allergen_free: dict[str, dict[int, bool]]  # allergen_name -> {node_id: bool}
 
 
 @dataclass
@@ -105,6 +106,21 @@ def _load_ingredients(cfg: Config) -> IngredientData:
         except (TypeError, ValueError):
             pass
 
+    # Load 14 EU allergen columns.
+    ALLERGEN_COLUMNS = [
+        "is_gluten_free", "is_crustacean_free", "is_egg_free", "is_fish_free",
+        "is_peanut_free", "is_soy_free", "is_lactose_free", "is_nut_free",
+        "is_celery_free", "is_mustard_free", "is_sesame_free", "is_sulfite_free",
+        "is_lupin_free", "is_mollusc_free",
+    ]
+    allergen_free: dict[str, dict[int, bool]] = {}
+    for col in ALLERGEN_COLUMNS:
+        if col in tags.columns:
+            name = col.removeprefix("is_").removesuffix("_free")  # e.g. "gluten"
+            allergen_free[name] = {
+                int(r.node_id): bool(getattr(r, col)) for r in tags.itertuples()
+            }
+
     name_to_row = {}
     nid_to_name_local = {int(r.node_id): str(r.name) for r in tags.itertuples()}
     for nid, row in nid_to_row.items():
@@ -122,6 +138,7 @@ def _load_ingredients(cfg: Config) -> IngredientData:
         is_vegetarian=is_vegetarian,
         cuisine_region=cuisine,
         nova_level=nova,
+        allergen_free=allergen_free,
     )
 
 
@@ -274,7 +291,11 @@ def get_bundle() -> Bundle:
         if _bundle is not None:
             return _bundle
         cfg = load_config()
-        matcher = Matcher(cfg.ingredient_list_csv, cfg.consolidated_nodes_csv)
+        matcher = Matcher(
+            cfg.ingredient_list_csv,
+            cfg.consolidated_nodes_csv,
+            ingredient_translations_csv=cfg.ingredient_translations_csv,
+        )
         ingredients = _load_ingredients(cfg)
         directions, dir_stats = _load_directions(cfg, ingredients.normed)
         pairing_stats = _load_pairing_stats(ingredients.normed)
