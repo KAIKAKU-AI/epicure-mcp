@@ -23,19 +23,12 @@ from ..data_loader import get_bundle
 from ..geometry import slerp
 
 DESCRIPTION = (
-    "Use ONLY when the user explicitly names a direction or target for "
-    "transformation: 'make miso more Mediterranean', 'sweeter version "
-    "of soy sauce', 'what's like rice but Indian?'. Do NOT use for "
-    "open-ended pairing or similarity questions -- use find_pairings "
-    "or neighbors for those. Rotates `seed` toward `target` on the unit "
-    "sphere by `angle_deg` then returns the closest ingredients to the "
-    "rotated query. Target is a discriminated union -- exactly one of: "
-    "{kind:'direction', name:'cuisine:Japanese' | 'cf_sweet' | 'nova' "
-    "| 'diet'}, {kind:'mode', property:'cf_savory', mode_id:3}, or "
-    "{kind:'ingredient', name:'miso'}. Call list_targets first to see "
-    "valid direction names and mode (property, mode_id) pairs. "
-    "angle_deg: 0 = identity (seed unchanged), 30 = mild morph, 60 = "
-    "strong morph, 90 = orthogonal (seed's identity dropped entirely)."
+    "Rotates a seed ingredient toward a named direction, emergent mode, or "
+    "second ingredient on the embedding unit sphere, then returns the nearest "
+    "ingredients to the transformed vector. This supports explicitly directed "
+    "transformations such as making an ingredient sweeter or more aligned with "
+    "a cuisine. list_targets provides valid directions and modes. angle_deg "
+    "ranges from 0 (unchanged) to 90 (fully orthogonal to the seed)."
 )
 
 
@@ -69,8 +62,7 @@ def _resolve_target(target: Any) -> tuple[np.ndarray | None, dict[str, Any]]:
         if not isinstance(prop, str) or not isinstance(mid, int):
             return None, {
                 "error": (
-                    "target.property must be a string and target.mode_id an int "
-                    "for kind='mode'"
+                    "target.property must be a string and target.mode_id an int for kind='mode'"
                 ),
             }
         if bundle.modes is None:

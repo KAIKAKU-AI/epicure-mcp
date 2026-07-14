@@ -16,13 +16,12 @@ from ..data_loader import get_bundle
 from ..geometry import pareto_frontier
 
 DESCRIPTION = (
-    "Use for 'closest X that's also Y' trade-off questions: 'the closest "
-    "thing to miso that is also fermented', 'rice-like ingredients that "
-    "are more Indian'. Computes the Pareto frontier balancing "
-    "proximity-to-seed against projection-onto-a-labelled-pole. When "
-    "pole=None, the tool auto-picks the top-K poles most relevant to "
-    "the seed. Each frontier entry is a non-dominated ingredient that "
-    "sits both close to the seed and far along the chosen pole."
+    "Computes Pareto frontiers that balance similarity to a seed ingredient "
+    "against movement toward one or more labelled flavour poles. It supports "
+    "trade-off questions such as finding ingredients that remain rice-like "
+    "while becoming more aligned with another culinary property. A specific "
+    "factor and side can be supplied, or relevant poles can be selected "
+    "automatically."
 )
 
 _COHERENCE_WEIGHT = {"high": 3.0, "moderate": 2.0, "low": 1.0, "incoherent": 0.0}

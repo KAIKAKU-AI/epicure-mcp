@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 import time
 
@@ -43,7 +44,9 @@ SAMPLE_CALLS: list[tuple[str, dict]] = [
 
 
 async def run(url: str) -> int:
-    async with streamablehttp_client(url) as (read, write, _):
+    token = os.environ.get("MCP_API_TOKEN", "").strip()
+    headers = {"Authorization": f"Bearer {token}"} if token else None
+    async with streamablehttp_client(url, headers=headers) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()
             tools = (await session.list_tools()).tools
@@ -68,9 +71,7 @@ async def run(url: str) -> int:
                         print(f"  ERROR  {name}: {text[:140]}")
                         failures.append(name)
                     else:
-                        text = next(
-                            (c.text for c in result.content if hasattr(c, "text")), ""
-                        )
+                        text = next((c.text for c in result.content if hasattr(c, "text")), "")
                         print(f"  PASS   {name}: {text[:120]}")
                 except Exception as e:
                     print(f"  CRASH  {name}: {e}")

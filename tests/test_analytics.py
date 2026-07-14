@@ -45,26 +45,19 @@ def test_log_call_sync_happy_path(capture_analytics) -> None:
     assert len(records) == 1
     r = records[0]
     assert r["tool"] == "widget"
-    assert r["args"] == {"a": 1, "b": 2}
     assert r["ok"] is True
-    assert r["error"] is None
-    assert r["result_truncated"] is False
+    assert r["error_type"] is None
     assert r["result_size_bytes"] == len(b'{"sum":3}')
     assert r["latency_ms"] >= 0
-    # Schema invariants:
-    for key in (
+    assert set(r) == {
         "ts",
         "ip_hash",
         "tool",
-        "args",
-        "result_preview",
         "result_size_bytes",
-        "result_truncated",
         "latency_ms",
         "ok",
-        "error",
-    ):
-        assert key in r
+        "error_type",
+    }
 
 
 def test_log_call_records_error_and_reraises(capture_analytics) -> None:
@@ -80,12 +73,14 @@ def test_log_call_records_error_and_reraises(capture_analytics) -> None:
     r = records[0]
     assert r["tool"] == "boom"
     assert r["ok"] is False
-    assert r["error"] == "ValueError: nope"
+    assert r["error_type"] == "ValueError"
     assert r["result_size_bytes"] == 0
+    assert "nope" not in json.dumps(r)
 
 
-def test_log_call_truncates_large_results(capture_analytics) -> None:
-    big = "x" * (analytics._MAX_PREVIEW_BYTES * 3)
+def test_log_call_records_size_but_never_result_content(capture_analytics) -> None:
+    secret = "private-result-content"
+    big = secret * 500
 
     @analytics.log_call("big")
     def producer() -> str:
@@ -93,25 +88,23 @@ def test_log_call_truncates_large_results(capture_analytics) -> None:
 
     producer()
     r = _records(capture_analytics)[0]
-    assert r["result_truncated"] is True
     assert r["result_size_bytes"] == len(big)
-    assert "[truncated]" in r["result_preview"]
-    # The preview is bounded by MAX_PREVIEW_BYTES + the truncation marker.
-    assert len(r["result_preview"].encode("utf-8")) <= (
-        analytics._MAX_PREVIEW_BYTES + len("... [truncated]") + 4
-    )
+    assert secret not in json.dumps(r)
 
 
-def test_log_call_pydantic_args_serialise(capture_analytics) -> None:
+def test_log_call_never_records_arguments(capture_analytics) -> None:
     from epicure_mcp.tools.morph_types import DirectionTarget
 
     @analytics.log_call("morph_like")
     def f(target: Any) -> str:
         return "ok"
 
-    f(target=DirectionTarget(kind="direction", name="cuisine:Japanese"))
+    target = DirectionTarget(kind="direction", name="cuisine:Japanese")
+    f(target=target)
     r = _records(capture_analytics)[0]
-    assert r["args"]["target"] == {"kind": "direction", "name": "cuisine:Japanese"}
+    encoded = json.dumps(r)
+    assert "args" not in r
+    assert target.name not in encoded
 
 
 def test_log_call_async(capture_analytics) -> None:
@@ -126,9 +119,20 @@ def test_log_call_async(capture_analytics) -> None:
     assert result == {"hello": "world"}
     r = _records(capture_analytics)[0]
     assert r["tool"] == "async_widget"
-    assert r["args"] == {"name": "world"}
     assert r["ok"] is True
     assert r["latency_ms"] >= 10
+    assert "world" not in json.dumps(r)
+
+
+def test_log_call_records_successful_none_result(capture_analytics) -> None:
+    @analytics.log_call("none_result")
+    def producer() -> None:
+        return None
+
+    assert producer() is None
+    r = _records(capture_analytics)[0]
+    assert r["ok"] is True
+    assert r["result_size_bytes"] == 0
 
 
 # --- IP hashing ------------------------------------------------------------

@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "epicure-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "Public read-only Epicure MCP server"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
-authors = [{name = "KAIKAKU-AI"}]
+license = "MIT"
+authors = [{name = "KAIKAKU.AI Limited", email = "hello@kaikaku.ai"}]
 dependencies = [
-  "mcp[cli]>=1.4.0",
+  "mcp[cli]>=1.28.1,<2",
   "starlette>=0.37.2",
   "uvicorn>=0.30.1",
   "numpy>=1.26.4",
@@ -19,6 +19,12 @@ dependencies = [
   "orjson>=3.10.6",
   "pydantic>=2.8.2",
 ]
+
+[project.urls]
+Homepage = "https://epicure.kaikaku.ai/agents"
+Documentation = "https://github.com/KAIKAKU-AI/epicure-mcp#readme"
+Repository = "https://github.com/KAIKAKU-AI/epicure-mcp"
+Issues = "https://github.com/KAIKAKU-AI/epicure-mcp/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -29,6 +35,7 @@ dev = [
   "ruff>=0.5.6",
   "mypy>=1.11.1",
   "types-requests>=2.32.0.20240712",
+  "umap-learn>=0.5.6",
 ]
 
 [tool.setuptools]
@@ -46,6 +53,7 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--strict-markers"
 
 [tool.mypy]
 python_version = "3.11"

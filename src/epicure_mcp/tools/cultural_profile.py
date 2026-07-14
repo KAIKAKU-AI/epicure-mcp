@@ -7,14 +7,11 @@ from typing import Any
 from ..data_loader import get_bundle
 
 DESCRIPTION = (
-    "Use when the question is specifically cuisine-related: 'what "
-    "cuisine does miso belong to?', 'how Japanese is this ingredient?', "
-    "'rank ginger across cuisines'. Returns cosine similarity of one "
-    "ingredient against all 8 macro-region cuisine directions "
-    "(Japanese, East_Asian, Southeast_Asian, South_Asian, Latin_American, "
-    "Mediterranean, Eastern_European, Western_Atlantic) in a single "
-    "call. For non-cuisine 'where is X?' questions use where_on_atlas "
-    "or closest_mode instead."
+    "Scores one ingredient against eight macro-region cuisine directions: "
+    "Japanese, East Asian, Southeast Asian, South Asian, Latin American, "
+    "Mediterranean, Eastern European, and Western Atlantic. Returns ranked "
+    "cosine similarities with p10/p90 range context for cuisine-focused "
+    "questions."
 )
 
 _CUISINE_KEYS = (

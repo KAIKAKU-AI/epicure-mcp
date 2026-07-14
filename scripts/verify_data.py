@@ -47,7 +47,15 @@ def main() -> int:
     print(f"Verifying {d}")
     ok = True
 
-    for fname in REQUIRED_CSV + REQUIRED_JSON + REQUIRED_NPY_NPZ + ["umap_coords.csv"]:
+    for fname in (
+        REQUIRED_CSV
+        + REQUIRED_JSON
+        + REQUIRED_NPY_NPZ
+        + [
+            "umap_coords.csv",
+            "umap_coords_3d.csv",
+        ]
+    ):
         path = d / fname
         if not path.exists():
             print(f"  MISSING: {fname}")
@@ -97,6 +105,15 @@ def main() -> int:
         print(f"  WRONG COLS: umap_coords has {list(umap.columns)}")
         ok = False
     print(f"  umap_coords: rows={len(umap)}")
+
+    umap_3d = pd.read_csv(d / "umap_coords_3d.csv")
+    if list(umap_3d.columns)[:4] != ["name", "x", "y", "z"]:
+        print(f"  WRONG COLS: umap_coords_3d has {list(umap_3d.columns)}")
+        ok = False
+    if len(umap_3d) != n:
+        print(f"  WRONG ROWS: umap_coords_3d has {len(umap_3d)}, expected {n}")
+        ok = False
+    print(f"  umap_coords_3d: rows={len(umap_3d)}")
 
     return 0 if ok else 1
 

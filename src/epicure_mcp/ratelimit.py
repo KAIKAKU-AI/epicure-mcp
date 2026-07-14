@@ -1,8 +1,7 @@
 """In-process per-IP token-bucket rate limiter (best-effort).
 
-Cluster-wide drift is bounded by Container Apps' `--max-replicas` cap;
-this server is a low-traffic public demo where best-effort limits are
-adequate.
+Production currently runs one MCP container behind Cloudflare, where an
+additional edge rule limits abusive request bursts before they reach origin.
 """
 
 from __future__ import annotations
@@ -52,6 +51,9 @@ class TokenBucketLimiter:
 
 
 def client_ip(request: Request) -> str:
+    cloudflare_ip = request.headers.get("cf-connecting-ip")
+    if cloudflare_ip:
+        return cloudflare_ip.strip()
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[0].strip()

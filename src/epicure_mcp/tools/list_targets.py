@@ -12,13 +12,10 @@ from typing import Any
 from ..data_loader import get_bundle
 
 DESCRIPTION = (
-    "Use before any call to morph or compare_on_axis with a free-text "
-    "axis or target you have not already verified. Enumerates every "
-    "valid target: supervised directions (cuisines, cf_* sensory "
-    "descriptors, usda_* nutrients, NOVA, diet) and emergent GMM mode "
-    "poles. Each entry includes a one-line description. The response "
-    "also explains how the `angle_deg` parameter works on morph. Filter "
-    "with kind='direction' or kind='mode' if you only need one family."
+    "Lists valid targets for morph and named axes for compare_on_axis. "
+    "Directions include cuisines, sensory descriptors, nutrients, NOVA, and "
+    "diet; modes are emergent GMM regions. Results are paginated by kind and "
+    "include a concise angle_deg guide for morph."
 )
 
 ANGLE_DEG_PRIMER = (
@@ -64,14 +61,25 @@ def _describe_direction(name: str) -> str:
     return "Supervised direction extracted from the embedding space."
 
 
-def run(kind: str | None = None) -> dict[str, Any]:
+def run(
+    kind: str = "direction",
+    limit: int = 25,
+    offset: int = 0,
+) -> dict[str, Any]:
+    if kind not in ("direction", "mode"):
+        return {"error": "kind must be 'direction' or 'mode'"}
+    if limit < 1 or limit > 50:
+        return {"error": "limit must be between 1 and 50"}
+    if offset < 0:
+        return {"error": "offset must be zero or greater"}
+
     bundle = get_bundle()
 
-    directions_payload: list[dict[str, Any]] = []
-    if kind in (None, "direction"):
+    all_directions: list[dict[str, Any]] = []
+    if kind == "direction":
         for name in sorted(bundle.directions.keys()):
             stats = bundle.direction_stats.get(name, {})
-            directions_payload.append(
+            all_directions.append(
                 {
                     "kind": "direction",
                     "name": name,
@@ -81,11 +89,11 @@ def run(kind: str | None = None) -> dict[str, Any]:
                 }
             )
 
-    modes_payload: list[dict[str, Any]] = []
-    if kind in (None, "mode") and bundle.modes is not None:
+    all_modes: list[dict[str, Any]] = []
+    if kind == "mode" and bundle.modes is not None:
         for prop in bundle.modes.properties:
             for mode in bundle.modes.by_property.get(prop, []):
-                modes_payload.append(
+                all_modes.append(
                     {
                         "kind": "mode",
                         "property": prop,
@@ -97,11 +105,22 @@ def run(kind: str | None = None) -> dict[str, Any]:
                     }
                 )
 
+    all_items = all_directions if kind == "direction" else all_modes
+    selected = all_items[offset : offset + limit]
+    directions_payload = selected if kind == "direction" else []
+    modes_payload = selected if kind == "mode" else []
+    next_offset = offset + len(selected) if offset + len(selected) < len(all_items) else None
     return {
         "angle_deg_primer": ANGLE_DEG_PRIMER,
         "directions": directions_payload,
         "modes": modes_payload,
         "summary": {
+            "kind": kind,
+            "total": len(all_items),
+            "returned": len(selected),
+            "offset": offset,
+            "limit": limit,
+            "next_offset": next_offset,
             "n_directions": len(directions_payload),
             "n_modes": len(modes_payload),
         },

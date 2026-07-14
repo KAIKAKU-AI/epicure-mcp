@@ -7,25 +7,30 @@ from typing import Any
 from ..data_loader import get_bundle
 
 DESCRIPTION = (
-    "Use to browse the 20 emergent flavour factors before calling "
-    "ingredient_on_factor or pareto_navigate ('what factors exist in "
-    "this model?', 'show me the high-coherence flavour axes'). Each "
-    "factor exposes a named axis (e.g. 'Indonesian Culinary Identity') "
-    "plus pole_a / pole_b Claude labels, coherence rating, and the "
-    "top-10 anchoring ingredients per pole. Filter with min_coherence "
-    "('high' | 'moderate' | 'low')."
+    "Lists the 20 emergent ICA flavour factors available to "
+    "ingredient_on_factor and pareto_navigate. Each summary includes the "
+    "factor index, named axis, pole labels, and coherence ratings. Set "
+    "include_examples=true to add themes and anchoring ingredients, and use "
+    "min_coherence to filter the catalogue."
 )
 
 _COHERENCE_RANK = {"high": 3, "moderate": 2, "low": 1, "incoherent": 0}
 
 
-def _pole_payload(pole: dict[str, Any], top_names: list[str]) -> dict[str, Any]:
-    return {
+def _pole_payload(
+    pole: dict[str, Any],
+    top_names: list[str],
+    *,
+    include_examples: bool,
+) -> dict[str, Any]:
+    payload = {
         "label": pole.get("label"),
         "coherence": pole.get("coherence"),
-        "themes": pole.get("themes", []),
-        "top_ingredients": top_names,
     }
+    if include_examples:
+        payload["themes"] = pole.get("themes", [])
+        payload["top_ingredients"] = top_names
+    return payload
 
 
 def _meets(coherence: str | None, threshold: int) -> bool:
@@ -34,7 +39,25 @@ def _meets(coherence: str | None, threshold: int) -> bool:
     return _COHERENCE_RANK.get(str(coherence).lower(), 0) >= threshold
 
 
-def run(min_coherence: str = "low") -> dict[str, Any]:
+def _axis_payload(axis: dict[str, Any], *, include_examples: bool) -> dict[str, Any]:
+    payload = {
+        "label": axis.get("label"),
+        "type": axis.get("type"),
+        "is_bipolar_dimension": axis.get("is_bipolar_dimension"),
+    }
+    if include_examples:
+        payload["description"] = axis.get("description")
+        payload["notes"] = axis.get("notes")
+    return payload
+
+
+def run(
+    min_coherence: str = "moderate",
+    include_examples: bool = False,
+) -> dict[str, Any]:
+    if min_coherence not in ("high", "moderate", "low"):
+        return {"error": "min_coherence must be 'high', 'moderate', or 'low'"}
+
     bundle = get_bundle()
     if bundle.factors is None:
         return {"error": "No factor data bundled."}
@@ -52,17 +75,30 @@ def run(min_coherence: str = "low") -> dict[str, Any]:
         factors_out.append(
             {
                 "factor": idx,
-                "axis": entry.get("axis", {}),
-                "pole_a": _pole_payload(pole_a, entry.get("pole_a_top", [])),
-                "pole_b": _pole_payload(pole_b, entry.get("pole_b_top", [])),
-                "secondary_lens": entry.get("secondary_lens"),
+                "axis": _axis_payload(
+                    entry.get("axis") or {},
+                    include_examples=include_examples,
+                ),
+                "pole_a": _pole_payload(
+                    pole_a,
+                    entry.get("pole_a_top", []),
+                    include_examples=include_examples,
+                ),
+                "pole_b": _pole_payload(
+                    pole_b,
+                    entry.get("pole_b_top", []),
+                    include_examples=include_examples,
+                ),
             }
         )
+        if include_examples:
+            factors_out[-1]["secondary_lens"] = entry.get("secondary_lens")
 
     return {
         "model": "cooc",
         "method": "ica",
         "n": bundle.factors.directions.shape[0],
         "min_coherence": min_coherence,
+        "detail": "examples" if include_examples else "summary",
         "factors": factors_out,
     }
