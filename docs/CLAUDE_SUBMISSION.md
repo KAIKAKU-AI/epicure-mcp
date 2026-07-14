@@ -72,14 +72,14 @@ instructions that override Claude or compel tool use.
 
 ## Release checklist
 
-- [ ] CI passes on the exact submitted revision.
-- [ ] `scripts/verify_data.py` succeeds.
-- [ ] Official MCP Inspector connects to the public URL.
-- [ ] All 13 live tool calls return successful MCP results.
-- [ ] Invalid enums and unknown ingredients return `isError: true`.
-- [ ] Tool titles and all four behaviour hints appear in live `tools/list`.
-- [ ] Default catalogue results remain compact.
-- [ ] `/healthz`, documentation, privacy, support, and security links are public.
+- [x] CI passes on the exact submitted revision.
+- [x] `scripts/verify_data.py` succeeds.
+- [x] Official MCP Inspector connects to the public URL.
+- [x] All 13 live tool calls return successful MCP results.
+- [x] Invalid enums and unknown ingredients return `isError: true`.
+- [x] Tool titles and all four behaviour hints appear in live `tools/list`.
+- [x] Default catalogue results remain compact.
+- [x] `/healthz`, documentation, privacy, support, and security links are public.
 - [ ] The connector is added to a regular Claude account and at least three
       example prompts complete successfully.
 - [ ] The exact production URL is entered in the Claude submission form.
