@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from epicure_mcp.tools import (
@@ -25,6 +27,7 @@ pytestmark = pytest.mark.usefixtures("use_real_bundle")
 
 # -------- compare_on_axis -------------------------------------------------
 
+
 def test_compare_on_axis_ok() -> None:
     out = compare_on_axis.run("miso", "soy_sauce", "cf_savory")
     assert "error" not in out
@@ -45,6 +48,7 @@ def test_compare_on_axis_bad_ingredient() -> None:
 
 # -------- pairing_score ---------------------------------------------------
 
+
 def test_pairing_score_ok() -> None:
     out = pairing_score.run("miso", "soy_sauce")
     assert "error" not in out
@@ -57,6 +61,7 @@ def test_pairing_score_bad() -> None:
 
 
 # -------- neighbors -------------------------------------------------------
+
 
 def test_neighbors_ok() -> None:
     out = neighbors.run("miso", top_k=3)
@@ -72,13 +77,17 @@ def test_neighbors_bad() -> None:
 
 # -------- flavour_correlations --------------------------------------------
 
+
 def test_flavour_correlations() -> None:
     out = flavour_correlations.run()
     assert "notable_correlations" in out
     assert out["n_axes"] > 0
+    assert out["returned"] <= 30
+    assert out["truncated"] == (out["total_matches"] > out["returned"])
 
 
 # -------- cultural_profile ------------------------------------------------
+
 
 def test_cultural_profile_ok() -> None:
     out = cultural_profile.run("miso")
@@ -93,6 +102,7 @@ def test_cultural_profile_bad() -> None:
 
 
 # -------- morph -----------------------------------------------------------
+
 
 def test_morph_direction() -> None:
     out = morph.run(
@@ -135,25 +145,48 @@ def test_morph_bad_target_kind() -> None:
 
 # -------- list_targets ----------------------------------------------------
 
-def test_list_targets_all() -> None:
+
+def test_list_targets_default_page() -> None:
     out = list_targets.run()
     assert out["summary"]["n_directions"] > 0
-    assert out["summary"]["n_modes"] > 0
+    assert out["summary"]["n_modes"] == 0
+    assert out["summary"]["limit"] == 25
+    assert len(out["directions"]) <= 25
     assert "angle_deg_primer" in out
 
 
 def test_list_targets_filtered() -> None:
-    out = list_targets.run(kind="direction")
-    assert out["summary"]["n_modes"] == 0
-    assert out["summary"]["n_directions"] > 0
+    out = list_targets.run(kind="mode", limit=10)
+    assert out["summary"]["n_directions"] == 0
+    assert out["summary"]["n_modes"] > 0
+    assert len(out["modes"]) == 10
 
 
 # -------- list_factors / ingredient_on_factor -----------------------------
+
 
 def test_list_factors() -> None:
     out = list_factors.run(min_coherence="low")
     assert out["n"] == 20
     assert len(out["factors"]) > 0
+    assert "top_ingredients" not in out["factors"][0]["pole_a"]
+    assert "notes" not in out["factors"][0]["axis"]
+
+
+def test_list_factors_examples_are_opt_in() -> None:
+    out = list_factors.run(min_coherence="high", include_examples=True)
+    assert out["factors"]
+    assert "top_ingredients" in out["factors"][0]["pole_a"]
+    assert "description" in out["factors"][0]["axis"]
+
+
+def test_default_catalogues_are_compact() -> None:
+    payloads = (
+        flavour_correlations.run(),
+        list_targets.run(),
+        list_factors.run(),
+    )
+    assert all(len(json.dumps(payload).encode("utf-8")) < 20_000 for payload in payloads)
 
 
 def test_ingredient_on_factor_ok() -> None:
@@ -168,6 +201,7 @@ def test_ingredient_on_factor_bad_index() -> None:
 
 
 # -------- pareto_navigate -------------------------------------------------
+
 
 def test_pareto_navigate_auto() -> None:
     out = pareto_navigate.run(seed="miso", top_k_poles=3, max_frontier=10)
@@ -188,6 +222,7 @@ def test_pareto_navigate_bad_seed() -> None:
 
 # -------- closest_mode ----------------------------------------------------
 
+
 def test_closest_mode_ok() -> None:
     out = closest_mode.run("miso", top_k=3)
     assert "error" not in out
@@ -203,6 +238,7 @@ def test_closest_mode_filtered() -> None:
 
 # -------- where_on_atlas --------------------------------------------------
 
+
 def test_where_on_atlas_ok() -> None:
     out = where_on_atlas.run("miso")
     assert "error" not in out
@@ -216,6 +252,7 @@ def test_where_on_atlas_bad() -> None:
 
 
 # -------- find_pairings ---------------------------------------------------
+
 
 def test_find_pairings_single_seed() -> None:
     out = find_pairings.run("miso")

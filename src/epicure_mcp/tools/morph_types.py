@@ -13,6 +13,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .tool_types import AxisName, IngredientName, ModeId, PropertyName
+
 
 class DirectionTarget(BaseModel):
     """Rotate the seed toward a supervised direction.
@@ -25,10 +27,9 @@ class DirectionTarget(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["direction"]
-    name: str = Field(
+    name: AxisName = Field(
         description=(
-            "Supervised direction key. Call list_targets(kind='direction') for "
-            "the catalogue."
+            "Supervised direction key. Call list_targets(kind='direction') for the catalogue."
         ),
     )
 
@@ -43,13 +44,13 @@ class ModeTarget(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["mode"]
-    property: str = Field(
+    property: PropertyName = Field(
         description=(
             "Mode property family, e.g. 'cf_savory', 'nova_level'. Call "
             "list_targets(kind='mode') for valid (property, mode_id) pairs."
         ),
     )
-    mode_id: int = Field(
+    mode_id: ModeId = Field(
         description="Integer mode id within the property family.",
     )
 
@@ -64,7 +65,7 @@ class IngredientTarget(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["ingredient"]
-    name: str = Field(
+    name: IngredientName = Field(
         description="Target ingredient name (free-text; matcher will resolve).",
     )
 

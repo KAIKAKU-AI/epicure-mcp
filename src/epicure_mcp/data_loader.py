@@ -153,7 +153,7 @@ def _load_pairing_stats(normed: np.ndarray) -> dict[str, float]:
     n = normed.shape[0]
     rows: list[np.ndarray] = []
     for i in range(n):
-        rows.append(normed[i] @ normed[i + 1:].T)
+        rows.append(normed[i] @ normed[i + 1 :].T)
     all_sims = np.concatenate(rows)
     return {
         "p10": round(float(np.percentile(all_sims, 10)), 4),
@@ -203,11 +203,7 @@ def _load_modes(cfg: Config, ing: IngredientData) -> ModeData | None:
             members = mode.get("all_members") or mode.get("top_members") or []
             member_names = [m["name"] for m in members if isinstance(m, dict) and "name" in m]
             llm = mode.get("llm_label") or {}
-            label = (
-                llm.get("label")
-                or mode.get("heuristic_name")
-                or f"{prop} mode {mid}"
-            )
+            label = llm.get("label") or mode.get("heuristic_name") or f"{prop} mode {mid}"
             dom_cui = (mode.get("dominant_cuisine") or {}).get("region")
             dom_fg = (mode.get("dominant_food_group") or {}).get("label")
             modes_list.append(
@@ -222,11 +218,7 @@ def _load_modes(cfg: Config, ing: IngredientData) -> ModeData | None:
                 )
             )
             if precomputed is None:
-                rows = [
-                    ing.name_to_row[n]
-                    for n in member_names
-                    if n in ing.name_to_row
-                ]
+                rows = [ing.name_to_row[n] for n in member_names if n in ing.name_to_row]
                 if len(rows) >= 2:
                     pole = ing.normed[rows].mean(axis=0)
                     pn = float(np.linalg.norm(pole))

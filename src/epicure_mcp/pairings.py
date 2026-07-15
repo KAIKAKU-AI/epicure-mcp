@@ -70,9 +70,7 @@ def _has_word_overlap(candidate_name: str, seed_names: list[str]) -> bool:
     return False
 
 
-def _meets_dietary(
-    ing: IngredientData, node_id: int, is_vegan: bool, is_vegetarian: bool
-) -> bool:
+def _meets_dietary(ing: IngredientData, node_id: int, is_vegan: bool, is_vegetarian: bool) -> bool:
     if not (is_vegan or is_vegetarian):
         return True
     if is_vegan:
@@ -124,8 +122,8 @@ class _RequestFilters:
     """
 
     n: int
-    score_mul: np.ndarray   # (N,) float32 -- (1 - category_penalty)
-    forbidden: np.ndarray   # (N,) bool   -- True == always disallow
+    score_mul: np.ndarray  # (N,) float32 -- (1 - category_penalty)
+    forbidden: np.ndarray  # (N,) bool   -- True == always disallow
 
 
 def _build_request_filters(
@@ -189,9 +187,7 @@ def _scored_candidates(
     scores = sims * filters.score_mul
     scores = np.where(filters.forbidden, -np.inf, scores)
     if excluded_rows:
-        excluded_idx = np.fromiter(
-            excluded_rows, dtype=np.int64, count=len(excluded_rows)
-        )
+        excluded_idx = np.fromiter(excluded_rows, dtype=np.int64, count=len(excluded_rows))
         scores[excluded_idx] = -np.inf
 
     if top_k > 0:
@@ -238,7 +234,13 @@ def build_graph(
 
     # One vocabulary-wide pass; reused for every centroid below.
     filters = _build_request_filters(
-        ing, seed_names, is_vegan, is_vegetarian, has_meat, has_sweet, has_fat,
+        ing,
+        seed_names,
+        is_vegan,
+        is_vegetarian,
+        has_meat,
+        has_sweet,
+        has_fat,
     )
 
     seed_vecs = ing.normed[seed_rows]
@@ -249,7 +251,11 @@ def build_graph(
     # so cap the candidate list there + a generous safety margin in case
     # some top scorers tie at -inf.
     primary_scored = _scored_candidates(
-        ing, combined_seed, seed_set, filters, top_k=max_primary_nodes * 3,
+        ing,
+        combined_seed,
+        seed_set,
+        filters,
+        top_k=max_primary_nodes * 3,
     )
 
     primaries: list[_Primary] = []
@@ -289,11 +295,11 @@ def build_graph(
         chosen_secondary_rows.add(target_row)
 
     def _scored_for_primary(
-        primary: _Primary, exclude_rows: set[int], top_k: int = 16,
+        primary: _Primary,
+        exclude_rows: set[int],
+        top_k: int = 16,
     ) -> list[tuple[int, float]]:
-        centroid = np.vstack(
-            [seed_vecs, ing.normed[primary.row : primary.row + 1]]
-        ).mean(axis=0)
+        centroid = np.vstack([seed_vecs, ing.normed[primary.row : primary.row + 1]]).mean(axis=0)
         return _scored_candidates(ing, centroid, exclude_rows, filters, top_k=top_k)
 
     # Batch 1: top-4 per primary (shared targets allowed).
@@ -309,9 +315,7 @@ def build_graph(
         # Number of unique-to-this-primary connections so far.
         shared_count = 0
         for nid in already_connected:
-            sources = {
-                lk.source_node_id for lk in secondary_links if lk.target_node_id == nid
-            }
+            sources = {lk.source_node_id for lk in secondary_links if lk.target_node_id == nid}
             if len(sources) > 1:
                 shared_count += 1
         unique_needed = max(0, 4 - shared_count)
@@ -339,9 +343,7 @@ def build_graph(
         # Primary with fewest connections gets the next slot.
         primary_to_extend = min(
             primaries,
-            key=lambda p: sum(
-                1 for link in secondary_links if link.source_node_id == p.node_id
-            ),
+            key=lambda p: sum(1 for link in secondary_links if link.source_node_id == p.node_id),
         )
         candidates = _scored_for_primary(
             primary_to_extend,
@@ -402,18 +404,14 @@ def format_graph_text(graph: PairingGraph, pairing_stats: dict[str, float]) -> s
         # Stable tie-break: highest count wins, lexicographic name breaks ties.
         # (Plain ``max(set(cats), key=cats.count)`` is non-deterministic because
         # set iteration order depends on Python hash randomisation.)
-        dominant = (
-            max(sorted(set(cats)), key=cats.count) if cats else "Unknown"
-        )
+        dominant = max(sorted(set(cats)), key=cats.count) if cats else "Unknown"
         density = "dense" if len(cluster) > 1 else "isolated"
         members = ", ".join(
             f"{_format_name(p.name)} ({p.similarity_to_center:.3f})" for p in cluster
         )
         label = chr(ord("A") + i)
         plural = "s" if len(cluster) != 1 else ""
-        lines.append(
-            f"  {label} [{dominant} - {len(cluster)} node{plural}, {density}]: {members}"
-        )
+        lines.append(f"  {label} [{dominant} - {len(cluster)} node{plural}, {density}]: {members}")
 
     if len(clusters) > 1:
         all_pairs_isolated = all(
@@ -454,11 +452,7 @@ def format_graph_text(graph: PairingGraph, pairing_stats: dict[str, float]) -> s
         sec_to_primaries.setdefault(link.target_node_id, []).append(
             primary_name_by_id.get(link.source_node_id, "?")
         )
-    bridges = [
-        (tid, pnames)
-        for tid, pnames in sec_to_primaries.items()
-        if len(set(pnames)) >= 2
-    ]
+    bridges = [(tid, pnames) for tid, pnames in sec_to_primaries.items() if len(set(pnames)) >= 2]
     bridges.sort(key=lambda x: -len(set(x[1])))
 
     if bridges:

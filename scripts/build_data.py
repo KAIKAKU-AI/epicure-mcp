@@ -13,6 +13,7 @@ checkout (so `application.utils` is importable). It produces:
   data/factor_dirs_ica_n20.npy           (computed)
   data/mode_poles_cooc.npy               (computed)
   data/umap_coords.csv                   (computed)
+  data/umap_coords_3d.csv                (computed)
 
 Usage:
     python scripts/build_data.py \\
@@ -41,9 +42,7 @@ def _load_aligned_embeddings(payload_dir: Path) -> tuple[np.ndarray, list[str], 
     normed = (mat / norms).astype(np.float32)
 
     ing = pd.read_csv(payload_dir / "ingredient_list.csv")
-    nid_to_name = dict(
-        zip(ing["node_id"].astype(int), ing["name"].astype(str), strict=False)
-    )
+    nid_to_name = dict(zip(ing["node_id"].astype(int), ing["name"].astype(str), strict=False))
     names = [nid_to_name[int(nid)] for nid in emb["node_id"].astype(int)]
     return normed, names, emb
 
@@ -124,7 +123,13 @@ def _build_mode_poles(
     return arr.shape[0]
 
 
-def _build_umap(normed: np.ndarray, names: list[str], out: Path) -> None:
+def _build_umap(
+    normed: np.ndarray,
+    names: list[str],
+    out: Path,
+    *,
+    n_components: int,
+) -> None:
     import umap
 
     reducer = umap.UMAP(
@@ -132,12 +137,15 @@ def _build_umap(normed: np.ndarray, names: list[str], out: Path) -> None:
         min_dist=0.03,
         metric="cosine",
         random_state=42,
-        n_components=2,
+        n_components=n_components,
     )
     coords = reducer.fit_transform(normed)
-    df = pd.DataFrame({"name": names, "x": coords[:, 0], "y": coords[:, 1]})
+    columns = {"name": names, "x": coords[:, 0], "y": coords[:, 1]}
+    if n_components == 3:
+        columns["z"] = coords[:, 2]
+    df = pd.DataFrame(columns)
     df.to_csv(out, index=False)
-    print(f"  umap_coords.csv: shape={coords.shape} -> {out}")
+    print(f"  {out.name}: shape={coords.shape} -> {out}")
 
 
 def main() -> None:
@@ -170,29 +178,29 @@ def main() -> None:
     print(f"  source repo: {source}")
 
     print("\n[1/5] Copying payload + paper artefacts")
-    _copy_files([
-        (payload / "embeddings.csv", out_dir / "embeddings.csv"),
-        (payload / "ingredient_list.csv", out_dir / "ingredient_list.csv"),
-        (payload / "ingredient_tags.csv", out_dir / "ingredient_tags.csv"),
-        (payload / "consolidated_nodes.csv", out_dir / "consolidated_nodes.csv"),
-        (
-            source / "application" / "paper" / "results" / "factor_labels_ica_cooc.json",
-            out_dir / "factor_labels_ica_cooc.json",
-        ),
-        (
-            source / "application" / "exploratory" / "results" / "mode_explorer_cooc.json",
-            out_dir / "mode_explorer_cooc.json",
-        ),
-    ])
+    _copy_files(
+        [
+            (payload / "embeddings.csv", out_dir / "embeddings.csv"),
+            (payload / "ingredient_list.csv", out_dir / "ingredient_list.csv"),
+            (payload / "ingredient_tags.csv", out_dir / "ingredient_tags.csv"),
+            (payload / "consolidated_nodes.csv", out_dir / "consolidated_nodes.csv"),
+            (
+                source / "application" / "paper" / "results" / "factor_labels_ica_cooc.json",
+                out_dir / "factor_labels_ica_cooc.json",
+            ),
+            (
+                source / "application" / "exploratory" / "results" / "mode_explorer_cooc.json",
+                out_dir / "mode_explorer_cooc.json",
+            ),
+        ]
+    )
 
     print("\n[2/5] Loading aligned embeddings")
     normed, names, _ = _load_aligned_embeddings(payload)
     print(f"  shape={normed.shape}, names={len(names)}")
 
     print("\n[3/5] Building supervised_directions.npz")
-    _build_supervised_directions(
-        source, normed, names, out_dir / "supervised_directions.npz"
-    )
+    _build_supervised_directions(source, normed, names, out_dir / "supervised_directions.npz")
 
     print("\n[4/5] Building factor_dirs_ica_n20.npy")
     _build_factor_dirs(source, normed, names, out_dir / "factor_dirs_ica_n20.npy")
@@ -205,8 +213,19 @@ def main() -> None:
     if args.skip_umap:
         print("\n[5b/5] Skipping UMAP (use --skip-umap=false to compute)")
     else:
-        print("\n[5b/5] Building umap_coords.csv")
-        _build_umap(normed, names, out_dir / "umap_coords.csv")
+        print("\n[5b/5] Building 2-D and 3-D UMAP projections")
+        _build_umap(
+            normed,
+            names,
+            out_dir / "umap_coords.csv",
+            n_components=2,
+        )
+        _build_umap(
+            normed,
+            names,
+            out_dir / "umap_coords_3d.csv",
+            n_components=3,
+        )
 
     print("\nDone.")
 

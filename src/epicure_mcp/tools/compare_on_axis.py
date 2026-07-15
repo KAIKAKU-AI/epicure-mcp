@@ -8,12 +8,11 @@ from ..data_loader import get_bundle
 from ..geometry import percentile_label
 
 DESCRIPTION = (
-    "Use when the user asks to compare two ingredients on one specific "
-    "axis (e.g. 'is miso sweeter than soy sauce?', 'which is more "
-    "Japanese: ponzu or sake?'). Projects both ingredients onto the "
-    "named axis and returns both values, the delta (b minus a), and the "
-    "axis p10/p90 range for scale context. Valid axis names come from "
-    "list_targets (kind='direction') -- verify before calling."
+    "Compares two ingredients on one named embedding axis, such as sweetness "
+    "or a cuisine direction. Returns both projections, the difference from "
+    "ingredient A to ingredient B, percentile labels, and the axis p10/p90 "
+    "range. Valid axis names are available from list_targets with "
+    "kind='direction'."
 )
 
 

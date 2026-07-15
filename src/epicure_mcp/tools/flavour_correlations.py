@@ -9,17 +9,22 @@ import numpy as np
 from ..data_loader import get_bundle
 
 DESCRIPTION = (
-    "Use when the user asks about the global structure of the flavour "
-    "space ('what correlates with sweetness?', 'is umami the same as "
-    "salty?', 'explain the trade-offs in this embedding'). Returns "
-    "cosine between every pair of axis vectors; positive = correlated, "
-    "negative = anti-correlated. Only axis pairs with |r| > 0.3 are "
-    "returned. Useful for explaining substitution trade-offs (e.g. "
-    "moving sweeter usually moves more-processed too)."
+    "Reports the strongest relationships between named axes in the global "
+    "flavour space. Positive cosine values indicate aligned axes and negative "
+    "values indicate opposing axes. Results can be limited and filtered by "
+    "minimum absolute correlation to keep the response concise."
 )
 
 
-def run() -> dict[str, Any]:
+def run(
+    limit: int = 30,
+    min_abs_correlation: float = 0.3,
+) -> dict[str, Any]:
+    if limit < 1 or limit > 100:
+        return {"error": "limit must be between 1 and 100"}
+    if min_abs_correlation < 0 or min_abs_correlation > 1:
+        return {"error": "min_abs_correlation must be between 0 and 1"}
+
     bundle = get_bundle()
     names = sorted(bundle.directions.keys())
     if not names:
@@ -34,7 +39,7 @@ def run() -> dict[str, Any]:
     for i in range(len(names)):
         for j in range(i + 1, len(names)):
             c = float(corr[i, j])
-            if abs(c) > 0.3:
+            if abs(c) >= min_abs_correlation:
                 notable.append(
                     {
                         "axis_a": names[i],
@@ -43,9 +48,15 @@ def run() -> dict[str, Any]:
                     }
                 )
     notable.sort(key=lambda x: -abs(x["correlation"]))
+    total = len(notable)
+    selected = notable[:limit]
     return {
         "n_axes": len(names),
-        "notable_correlations": notable,
+        "min_abs_correlation": min_abs_correlation,
+        "total_matches": total,
+        "returned": len(selected),
+        "truncated": total > len(selected),
+        "notable_correlations": selected,
         "note": (
             "Cosine between unit-direction vectors. Use to understand "
             "trade-offs (e.g. sweet vs nova) when substituting ingredients."

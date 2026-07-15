@@ -9,12 +9,10 @@ import numpy as np
 from ..data_loader import get_bundle
 
 DESCRIPTION = (
-    "Use when the user asks what is similar to one specific ingredient "
-    "('what's like miso?', 'similar to gochujang'). Returns the top-k "
-    "cosine-nearest ingredients to a single seed -- no graph structure, "
-    "no clustering. For multi-seed pairing exploration ('what goes with "
-    "miso AND ginger?') use find_pairings instead, which handles seed "
-    "centroids, dietary filters, and category penalties."
+    "Returns the nearest ingredients to one seed by cosine similarity in the "
+    "300-dimensional embedding. The result is a ranked similarity list with "
+    "no clustering or dietary filtering, suited to direct substitution and "
+    "single-ingredient similarity questions."
 )
 
 

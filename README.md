@@ -1,185 +1,154 @@
-# Epicure MCP Server
+# Epicure MCP
 
-Public, anonymous, read-only Model Context Protocol (MCP) server for the
-Epicure ingredient-embedding model.
+[Epicure](https://epicure.kaikaku.ai/agents) is a public, anonymous,
+read-only Model Context Protocol server for computational flavour exploration.
+It exposes deterministic tools over 1,790 ingredient embeddings learned from a
+4.14 million-recipe, multilingual corpus.
 
-The server is **stateless** and **deterministic**: every tool call is a
-pure function of the request arguments plus the bundled artefacts. There
-are no external model calls, no embedding fallback, and no user state.
+- **MCP endpoint:** `https://epicure-mcp.kaikaku.ai/mcp`
+- **Health check:** `https://epicure-mcp.kaikaku.ai/healthz`
+- **Interactive guide:** [epicure.kaikaku.ai/agents](https://epicure.kaikaku.ai/agents)
+- **Authentication:** none
+- **Transport:** Streamable HTTP
 
-Designed for [Azure Container Apps](https://learn.microsoft.com/azure/container-apps/)
-deployment with a replica cap to bound spend.
+The production origin runs on KAIKAKU's local compute cluster and is published
+through a Cloudflare Tunnel. It is not hosted on Google Cloud or Azure. Every
+tool reads the bundled model artefacts; the MCP server makes no external AI or
+data-provider calls.
 
-### Logging and analytics
+## Connect from Claude
 
-Each tool call produces one structured JSON log line containing the tool
-name, the call arguments, a truncated preview of the result (max 4 KB),
-the latency, success flag, and a **hashed** client IP (SHA-256 with a
-salt that rotates at UTC midnight and never leaves the running replica).
-Raw IPs are never stored or logged. Logs are forwarded to the deployment
-operator's log store (Azure Log Analytics by default) for aggregate
-usage analytics only.
+In Claude, open **Settings → Connectors → Add custom connector** and enter:
+
+```text
+Name: Epicure
+URL:  https://epicure-mcp.kaikaku.ai/mcp
+Auth: None
+```
+
+Try one of these prompts after enabling the connector:
+
+- “Use Epicure to build a vegan pairing graph around tomato and basil.”
+- “Compare miso and soy sauce on the savoury axis.”
+- “What ingredients are nearest to saffron in Epicure’s flavour space?”
+- “Move rice 30 degrees toward the South Asian cuisine direction.”
+- “Show where yuzu sits on Epicure’s ingredient atlas.”
+- “Find a flavour trade-off from miso along a coherent factor.”
+
+Tool outputs describe learned statistical relationships. They are not food
+safety, allergy, medical, or nutritional advice.
 
 ## Tools
 
-| Category | Tool | Description |
-|----------|------|-------------|
-| Ported  | `compare_on_axis` | Project two ingredients onto a named axis and compare. |
-| Ported  | `pairing_score`   | Overall cosine affinity (300-d) between two ingredients. |
-| Ported  | `find_pairings`   | Cluster + bridge graph computed in-process from the bundled embeddings. |
-| Ported  | `flavour_correlations` | Which axes correlate with each other. |
-| Ported  | `cultural_profile` | Cosine to each cuisine direction. |
-| Novel   | `neighbors`        | Top-k cosine neighbours. |
-| Novel   | `morph`            | Unified SLERP toward a direction, mode, or ingredient. |
-| Novel   | `list_targets`     | Catalogue of valid `morph` targets + `angle_deg` primer. |
-| Novel   | `list_factors`     | Residualised ICA factor catalogue (Claude-labelled poles). |
-| Novel   | `ingredient_on_factor` | Signed projection onto an ICA factor. |
-| Novel   | `pareto_navigate`  | Pareto frontier on (proximity, pole-projection). |
-| Novel   | `closest_mode`     | Which named GMM mode the ingredient lives in. |
-| Novel   | `where_on_atlas`   | Precomputed UMAP `(x, y)` + nearest-in-2D peers. |
+All tools advertise read-only, non-destructive, idempotent, closed-world MCP
+annotations and validated JSON schemas.
+
+| Tool title | MCP name | Purpose |
+| --- | --- | --- |
+| Compare ingredients on an axis | `compare_on_axis` | Compare two ingredients along a named flavour, cuisine, nutrient, diet, or processing axis. |
+| Score an ingredient pairing | `pairing_score` | Measure cosine affinity for one exact ingredient pair. |
+| Explore ingredient pairings | `find_pairings` | Build a diversified cluster-and-bridge pairing graph for one or more seeds. |
+| Inspect flavour correlations | `flavour_correlations` | Return the strongest relationships between named flavour-space axes. |
+| Profile an ingredient by cuisine | `cultural_profile` | Measure an ingredient against the bundled cuisine directions. |
+| Find similar ingredients | `neighbors` | Return nearest ingredients in the 300-dimensional embedding. |
+| Transform an ingredient in flavour space | `morph` | Rotate a seed toward a direction, mode, or ingredient using spherical interpolation. |
+| List transformation targets | `list_targets` | Page through valid directions and emergent modes for `morph`. |
+| List flavour factors | `list_factors` | Inspect the 20 named ICA factor summaries, with examples available on request. |
+| Project an ingredient onto a factor | `ingredient_on_factor` | Measure signed position on an ICA factor. |
+| Navigate a flavour trade-off | `pareto_navigate` | Find ingredients on a proximity-versus-factor Pareto frontier. |
+| Find an ingredient’s flavour region | `closest_mode` | Find the closest named GMM modes. |
+| Locate an ingredient on the atlas | `where_on_atlas` | Return the precomputed atlas coordinate and nearby 2-D peers. |
+
+Large catalogues are filtered and paginated. Default responses are deliberately
+compact; callers can request more detail through each tool's documented inputs.
+
+## Data and privacy
+
+Epicure has no accounts, cookies, user profiles, or advertising. Tool arguments
+and result content are processed in memory and are never written to application
+logs. Minimal operational telemetry contains a rotating pseudonymous client
+hash, tool name, response size, latency, success state, and exception class.
+
+Read the complete [Privacy Policy](PRIVACY.md), [Security Policy](SECURITY.md),
+[Support Policy](SUPPORT.md), and [Terms](TERMS.md).
+
+## Architecture
+
+```text
+MCP client
+    │  HTTPS / Streamable HTTP
+    ▼
+Cloudflare edge (TLS, DDoS controls, WAF/rate limits)
+    │  outbound-only Cloudflare Tunnel
+    ▼
+reef-cluster on local KAIKAKU compute
+    └── epicure-mcp container
+          └── bundled read-only model artefacts
+```
+
+The origin binds to loopback on the cluster host. No inbound router port is
+opened; `cloudflared` initiates the tunnel from the private Docker network.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for operations and
+[docs/CLAUDE_SUBMISSION.md](docs/CLAUDE_SUBMISSION.md) for the directory listing.
 
 ## Local development
+
+Python 3.11 or newer is supported (production uses Python 3.12).
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-
-# Build the data bundle from a local epicure-data checkout
-python scripts/build_data.py --source-repo /path/to/epicure-data --out-dir data
 python scripts/verify_data.py --data-dir data
-
-# Run server
+ruff check src tests scripts
+pytest -q
 python -m epicure_mcp.server
-
-# Smoke-test
-curl http://localhost:8080/healthz
 ```
 
-Endpoints:
+The local endpoints are:
 
-| Path | Method | Description |
-|------|--------|-------------|
-| `/healthz` | GET | Liveness probe (does not load the bundle). |
-| `/mcp`     | POST | Streamable HTTP MCP JSON-RPC endpoint. |
+| Path | Method | Purpose |
+| --- | --- | --- |
+| `/healthz` | GET | Lightweight liveness probe. |
+| `/mcp` | POST/GET/DELETE | Streamable HTTP MCP transport. |
+| `/atlas` | GET | Read-only 3-D UMAP projection used by the Epicure site. |
+| `/favicon.ico`, `/favicon.png` | GET | Connector icon. |
 
-## Environment variables
+Inspect the local server with the official MCP Inspector:
 
-| Var | Default | Description |
-|-----|---------|-------------|
-| `EPICURE_DATA_DIR` | `<repo>/data` | Bundled-artefact directory. |
+```bash
+npx -y @modelcontextprotocol/inspector \
+  --cli http://127.0.0.1:8080/mcp --transport http --method tools/list
+```
+
+Run the complete remote smoke suite against production:
+
+```bash
+python scripts/smoke_test_remote.py https://epicure-mcp.kaikaku.ai/mcp
+```
+
+## Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `EPICURE_DATA_DIR` | `<repo>/data` | Bundled artefact directory. |
+| `EPICURE_ASSETS_DIR` | bundled assets | Optional favicon directory. |
 | `HOST` | `0.0.0.0` | Bind address. |
 | `PORT` | `8080` | Bind port. |
-| `RATE_LIMIT_PER_MINUTE` | `60` | Token-bucket refill rate. |
-| `RATE_LIMIT_BURST` | `10` | Token-bucket capacity. |
-| `MCP_SERVER_NAME` | `epicure` | Reported in the MCP `initialize` response. |
+| `RATE_LIMIT_PER_MINUTE` | `60` | Per-client token refill rate. |
+| `RATE_LIMIT_BURST` | `10` | Per-client burst capacity. |
+| `MCP_SERVER_NAME` | `Epicure` | Name in the MCP initialize response. |
+| `MCP_API_TOKEN` | unset | Optional bearer token for private deployments. Production leaves this unset. |
+| `MCP_ALLOWED_HOSTS` | production + local hosts | Comma-separated DNS-rebinding allowlist. |
+| `MCP_ALLOWED_ORIGINS` | Claude, Epicure + local origins | Comma-separated browser-origin allowlist. |
 
-The server is fully self-contained: there is no upstream API call.
-`find_pairings` runs the graph algorithm locally against the bundled
-embeddings + ingredient metadata.
+## Bundled artefacts
 
-## Bundled data
-
-The `data/` directory is **committed to this repo** (~13 MB) so the
-server is fully self-contained: clone, build, deploy. No external data
-checkout required.
-
-| File | Source | Size |
-|------|--------|------|
-| `embeddings.csv` | epicure-data: `deploy/payload/embeddings.csv` | ~10 MB |
-| `ingredient_list.csv` | epicure-data payload | ~75 KB |
-| `ingredient_tags.csv`  | epicure-data payload | ~100 KB |
-| `consolidated_nodes.csv` | epicure-data payload | ~70 KB |
-| `factor_labels_ica_cooc.json` | `application/paper/results/` | ~75 KB |
-| `mode_explorer_cooc.json` | `application/exploratory/results/` | ~2 MB |
-| `supervised_directions.npz` | computed (38 axes) | ~55 KB |
-| `factor_dirs_ica_n20.npy` | computed (20 unit vectors) | ~25 KB |
-| `mode_poles_cooc.npy` | computed (150 unit vectors) | ~180 KB |
-| `umap_coords.csv` | computed (1,790 x 2) | ~55 KB |
-
-### Refreshing the bundle when the model changes
-
-When a new `epicure-data` training run lands, regenerate the bundle from
-a local checkout and commit the diff:
-
-```bash
-python scripts/build_data.py --source-repo /path/to/epicure-data --out-dir data
-python scripts/verify_data.py --data-dir data
-git add data/ && git commit -m "data: refresh bundle from <run-id>"
-```
-
-## Azure Container Apps deployment
-
-### One-time setup
-
-You need the Azure CLI installed and an authenticated session:
-
-```bash
-# Install az (Ubuntu/Debian)
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-az login
-az account set --subscription "<your-sub-id>"
-
-# Provision RG + ACR + ACA env + container app + GitHub OIDC federation
-./scripts/azure_setup.sh
-```
-
-The script prints the GitHub Actions secrets / variables you must set
-on the repo for the deploy workflow to function.
-
-### Continuous deployment
-
-`.github/workflows/deploy.yml` runs on every push to `main`:
-
-1. Checks out the repo (the data bundle is already inside it).
-2. Builds & pushes the Docker image to ACR via OIDC.
-3. Calls `az containerapp update` and waits for the new revision to
-   answer `/healthz`.
-
-### Scaling and rate limit
-
-- `--max-replicas 3` puts a hard cap on burst spend.
-- `--min-replicas 0` allows scale-to-zero (cold start ~3-5 s while
-  the bundle loads).
-- The in-process token bucket limits each client IP to 60 req/min with
-  a burst of 10. Limits drift across replicas; precision is bounded by
-  the replica cap.
-
-## Connecting clients
-
-Once deployed, the MCP endpoint is `https://<aca-fqdn>/mcp`.
-
-### Claude.ai
-
-Add a custom MCP server in **Settings -> Integrations -> Add custom**:
-
-```
-Name: Epicure
-URL : https://<aca-fqdn>/mcp
-Auth: None
-```
-
-### Cursor
-
-Edit `~/.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "epicure": {
-      "transport": "streamable-http",
-      "url": "https://<aca-fqdn>/mcp"
-    }
-  }
-}
-```
-
-### ChatGPT (custom GPT)
-
-Use Actions with the OpenAPI schema generated from the MCP `tools/list`
-response.
+The repository includes the model bundle, so production does not depend on an
+upstream service at runtime. It contains embeddings and ingredient metadata,
+supervised directions, ICA factors, GMM modes, and 2-D/3-D UMAP projections.
+Validate shape and presence with `scripts/verify_data.py` after any refresh.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © KAIKAKU.AI Limited.

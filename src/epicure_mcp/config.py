@@ -18,6 +18,9 @@ class Config:
     rate_limit_per_minute: int
     rate_limit_burst: int
     server_name: str
+    api_token: str | None = None
+    allowed_hosts: tuple[str, ...] = ()
+    allowed_origins: tuple[str, ...] = ()
 
     @property
     def embeddings_csv(self) -> Path:
@@ -59,10 +62,21 @@ class Config:
     def umap_coords_csv(self) -> Path:
         return self.data_dir / "umap_coords.csv"
 
+    @property
+    def umap_coords_3d_csv(self) -> Path:
+        return self.data_dir / "umap_coords_3d.csv"
+
 
 def _env_int(key: str, default: int) -> int:
     raw = os.environ.get(key)
     return int(raw) if raw else default
+
+
+def _env_csv(key: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    raw = os.environ.get(key)
+    if not raw:
+        return default
+    return tuple(item.strip() for item in raw.split(",") if item.strip())
 
 
 def load_config() -> Config:
@@ -72,5 +86,31 @@ def load_config() -> Config:
         port=_env_int("PORT", 8080),
         rate_limit_per_minute=_env_int("RATE_LIMIT_PER_MINUTE", 60),
         rate_limit_burst=_env_int("RATE_LIMIT_BURST", 10),
-        server_name=os.environ.get("MCP_SERVER_NAME", "epicure"),
+        server_name=os.environ.get("MCP_SERVER_NAME", "Epicure"),
+        api_token=os.environ.get("MCP_API_TOKEN") or None,
+        allowed_hosts=_env_csv(
+            "MCP_ALLOWED_HOSTS",
+            (
+                "epicure-mcp.kaikaku.ai",
+                "epicure-mcp.kaikaku.ai:*",
+                "localhost",
+                "localhost:*",
+                "127.0.0.1",
+                "127.0.0.1:*",
+                "mcp",
+                "mcp:*",
+            ),
+        ),
+        allowed_origins=_env_csv(
+            "MCP_ALLOWED_ORIGINS",
+            (
+                "https://claude.ai",
+                "https://www.claude.ai",
+                "https://claude.com",
+                "https://www.claude.com",
+                "https://epicure.kaikaku.ai",
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+            ),
+        ),
     )

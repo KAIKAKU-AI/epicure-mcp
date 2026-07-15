@@ -45,8 +45,14 @@ def test_miso_primaries_stable() -> None:
 
     primary_names = [p.name for p in graph.primaries]
     expected = {
-        "mirin", "bonito_flakes", "rice_vinegar", "udon_noodle",
-        "tempura_flour", "soybean_oil", "vegetarian_oyster_sauce", "wakame",
+        "mirin",
+        "bonito_flakes",
+        "rice_vinegar",
+        "udon_noodle",
+        "tempura_flour",
+        "soybean_oil",
+        "vegetarian_oyster_sauce",
+        "wakame",
     }
     assert set(primary_names) == expected, f"primaries drifted: {primary_names}"
     # Highest-similarity primary should be mirin (~0.41).
@@ -65,17 +71,11 @@ def test_miso_top_bridge_is_garland_chrysanthemum() -> None:
     # Count how many distinct primaries each secondary connects to.
     sec_to_primaries: dict[int, set[int]] = {}
     for link in graph.secondary_links:
-        sec_to_primaries.setdefault(link.target_node_id, set()).add(
-            link.source_node_id
-        )
-    bridge_counts = Counter(
-        {tid: len(srcs) for tid, srcs in sec_to_primaries.items()}
-    )
+        sec_to_primaries.setdefault(link.target_node_id, set()).add(link.source_node_id)
+    bridge_counts = Counter({tid: len(srcs) for tid, srcs in sec_to_primaries.items()})
     top_bridge_tid, top_bridge_count = bridge_counts.most_common(1)[0]
     top_bridge_name = next(
-        lk.target_name
-        for lk in graph.secondary_links
-        if lk.target_node_id == top_bridge_tid
+        lk.target_name for lk in graph.secondary_links if lk.target_node_id == top_bridge_tid
     )
     assert top_bridge_name == "garland_chrysanthemum"
     assert top_bridge_count >= 4  # appears across at least half of primaries
@@ -88,10 +88,7 @@ def test_vegan_filter_excludes_animal_products() -> None:
     seed_rows, seed_names = _resolve_rows(bundle, ["tomato", "basil"])
     graph = build_graph(bundle, seed_rows, seed_names, is_vegan=True)
 
-    all_names = (
-        [p.name for p in graph.primaries]
-        + [lk.target_name for lk in graph.secondary_links]
-    )
+    all_names = [p.name for p in graph.primaries] + [lk.target_name for lk in graph.secondary_links]
     forbidden = {"beef", "chicken", "pork", "cheese", "butter", "milk", "yogurt"}
     leaked = forbidden & set(all_names)
     assert not leaked, f"vegan filter leaked: {leaked}"

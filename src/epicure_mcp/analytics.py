@@ -1,24 +1,12 @@
-"""Per-tool-call analytics.
+"""Privacy-minimised per-tool operational telemetry.
 
-Emits one JSON line per ``tools/call`` invocation to stdout, where Azure
-Container Apps forwards it to ``ContainerAppConsoleLogs_CL`` in the
-Log Analytics workspace. Each record carries:
+One structured JSON record is emitted for each ``tools/call`` invocation.
+Records contain timing, response size, success state, tool name, and a daily
+unlinkable client hash. Tool arguments, ingredient queries, result content,
+Claude prompts, chat history, and uploaded files are never logged.
 
-  - ts             ISO 8601 timestamp (millisecond precision, UTC)
-  - ip_hash        SHA-256(salt || ip)[:16], salt rotates daily per replica
-  - tool           the registered tool name
-  - args           full input argument dict (Pydantic models materialised)
-  - result_preview UTF-8 truncated to 4 KB
-  - result_size_bytes  size before truncation
-  - result_truncated   whether the preview was truncated
-  - latency_ms     wall time of the wrapped call
-  - ok             False if the call raised
-  - error          "<ExceptionType>: <message>" when ok is False
-
-The salt is generated fresh at process startup and rotates at UTC
-midnight. This is intentional: IPs are never recoverable, and unique
-counts are scoped to one replica's lifetime within one UTC day -- enough
-for usage analytics, not enough to follow a single user across time.
+The hash uses a process-local random salt that rotates at UTC midnight. It is
+useful for same-day abuse detection but cannot track a requester across days.
 """
 
 from __future__ import annotations
@@ -28,7 +16,6 @@ import contextvars
 import datetime
 import functools
 import hashlib
-import inspect
 import json
 import logging
 import secrets
@@ -43,8 +30,6 @@ from starlette.types import ASGIApp
 
 log = logging.getLogger("epicure_mcp.analytics")
 
-_MAX_PREVIEW_BYTES = 4096
-
 _current_ip: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "epicure_mcp_current_ip", default=None
 )
@@ -54,12 +39,10 @@ _salt: str = secrets.token_hex(16)
 _salt_date: str = datetime.datetime.now(datetime.UTC).date().isoformat()
 
 
-# ---------------------------------------------------------------------------
-# IP capture
-# ---------------------------------------------------------------------------
-
-
 def _request_ip(request: Request) -> str:
+    cloudflare_ip = request.headers.get("cf-connecting-ip")
+    if cloudflare_ip:
+        return cloudflare_ip.strip()
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[0].strip()
@@ -67,11 +50,7 @@ def _request_ip(request: Request) -> str:
 
 
 class ClientContextMiddleware(BaseHTTPMiddleware):
-    """Capture the requester IP into a contextvar so tools can hash it.
-
-    The contextvar is set for the duration of each request; tool calls
-    invoked inside the same asyncio.Task inherit it transparently.
-    """
+    """Expose a request IP only long enough to create a daily hash."""
 
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
@@ -84,17 +63,12 @@ class ClientContextMiddleware(BaseHTTPMiddleware):
             _current_ip.reset(token)
 
 
-# ---------------------------------------------------------------------------
-# Hashing
-# ---------------------------------------------------------------------------
-
-
 def _today_utc_iso() -> str:
     return datetime.datetime.now(datetime.UTC).date().isoformat()
 
 
 def _current_salt() -> str:
-    """Return today's salt, rotating at UTC midnight."""
+    """Return today's salt, rotating lazily at UTC midnight."""
     global _salt, _salt_date
     today = _today_utc_iso()
     with _salt_lock:
@@ -107,150 +81,93 @@ def _current_salt() -> str:
 def _hashed_ip(ip: str | None) -> str | None:
     if not ip:
         return None
-    salt = _current_salt()
-    return hashlib.sha256(f"{salt}:{ip}".encode()).hexdigest()[:16]
+    return hashlib.sha256(f"{_current_salt()}:{ip}".encode()).hexdigest()[:16]
 
 
-# ---------------------------------------------------------------------------
-# Serialisation helpers
-# ---------------------------------------------------------------------------
-
-
-def _coerce(value: Any) -> Any:
-    """Make Pydantic models / oddly-typed values JSON-friendly."""
-    if hasattr(value, "model_dump"):
-        return value.model_dump()
-    return value
-
-
-def _coerce_args(args: dict[str, Any]) -> dict[str, Any]:
-    return {k: _coerce(v) for k, v in args.items()}
-
-
-def _serialize_result(result: Any) -> tuple[str, int, bool]:
+def _result_size_bytes(result: Any) -> int:
     if result is None:
-        return "", 0, False
+        return 0
     if isinstance(result, str):
-        body = result
-    else:
-        try:
-            body = json.dumps(_coerce(result), default=str, separators=(",", ":"))
-        except Exception:
-            body = repr(result)
-    raw_bytes = body.encode("utf-8")
-    n = len(raw_bytes)
-    if n > _MAX_PREVIEW_BYTES:
-        truncated = raw_bytes[:_MAX_PREVIEW_BYTES].decode("utf-8", errors="ignore")
-        return truncated + "... [truncated]", n, True
-    return body, n, False
+        return len(result.encode("utf-8"))
+    try:
+        body = json.dumps(result, default=str, separators=(",", ":"))
+    except Exception:
+        body = repr(result)
+    return len(body.encode("utf-8"))
 
 
 def _emit(record: dict[str, Any]) -> None:
     try:
         log.info(json.dumps(record, default=str, separators=(",", ":")))
-    except Exception:  # pragma: no cover - logging must never raise
+    except Exception:  # pragma: no cover - telemetry must never break a tool
         pass
 
 
 def _emit_record(
     tool_name: str,
-    call_args: dict[str, Any],
     result: Any,
     started: float,
     ok: bool,
-    error: str | None,
+    error_type: str | None,
 ) -> None:
-    elapsed_ms = (time.perf_counter() - started) * 1000.0
-    preview, size, truncated = _serialize_result(result) if ok else ("", 0, False)
-    record = {
-        "ts": datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds"),
-        "ip_hash": _hashed_ip(_current_ip.get()),
-        "tool": tool_name,
-        "args": _coerce_args(call_args),
-        "result_preview": preview,
-        "result_size_bytes": size,
-        "result_truncated": truncated,
-        "latency_ms": round(elapsed_ms, 2),
-        "ok": ok,
-        "error": error,
-    }
-    _emit(record)
-
-
-# ---------------------------------------------------------------------------
-# Decorator
-# ---------------------------------------------------------------------------
+    _emit(
+        {
+            "ts": datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds"),
+            "ip_hash": _hashed_ip(_current_ip.get()),
+            "tool": tool_name,
+            "result_size_bytes": _result_size_bytes(result) if ok else 0,
+            "latency_ms": round((time.perf_counter() - started) * 1000.0, 2),
+            "ok": ok,
+            "error_type": error_type,
+        }
+    )
 
 
 def log_call(tool_name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Decorate a tool callable to emit a structured analytics line per call.
-
-    Works for both sync and async callables. Preserves the original function
-    signature via ``functools.wraps`` so FastMCP can still introspect it to
-    derive the input JSON Schema.
-    """
+    """Emit minimal telemetry while preserving FastMCP's function signature."""
 
     def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
-        sig = inspect.signature(fn)
         is_async = asyncio.iscoroutinefunction(fn)
 
         if is_async:
 
             @functools.wraps(fn)
             async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
-                call_args = _bind_args(sig, args, kwargs)
                 started = time.perf_counter()
                 result: Any = None
-                ok = True
-                error: str | None = None
+                succeeded = False
                 try:
                     result = await fn(*args, **kwargs)
+                    succeeded = True
                     return result
-                except Exception as e:
-                    ok = False
-                    error = f"{type(e).__name__}: {e}"
+                except Exception as exc:
+                    _emit_record(tool_name, None, started, False, type(exc).__name__)
                     raise
                 finally:
-                    _emit_record(tool_name, call_args, result, started, ok, error)
+                    if succeeded:
+                        _emit_record(tool_name, result, started, True, None)
 
             return async_wrapper
 
         @functools.wraps(fn)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
-            call_args = _bind_args(sig, args, kwargs)
             started = time.perf_counter()
             result: Any = None
-            ok = True
-            error: str | None = None
+            succeeded = False
             try:
                 result = fn(*args, **kwargs)
+                succeeded = True
                 return result
-            except Exception as e:
-                ok = False
-                error = f"{type(e).__name__}: {e}"
+            except Exception as exc:
+                _emit_record(tool_name, None, started, False, type(exc).__name__)
                 raise
             finally:
-                _emit_record(tool_name, call_args, result, started, ok, error)
+                if succeeded:
+                    _emit_record(tool_name, result, started, True, None)
 
         return sync_wrapper
 
     return decorator
-
-
-def _bind_args(sig: inspect.Signature, args: tuple, kwargs: dict) -> dict[str, Any]:
-    try:
-        bound = sig.bind(*args, **kwargs)
-        bound.apply_defaults()
-        return dict(bound.arguments)
-    except TypeError:
-        # Best-effort fall-back if the call wasn't bindable (shouldn't
-        # happen for FastMCP-validated tool invocations).
-        return {"args": list(args), "kwargs": kwargs}
-
-
-# ---------------------------------------------------------------------------
-# Test hooks
-# ---------------------------------------------------------------------------
 
 
 def _force_salt_for_testing(salt: str, date_iso: str) -> None:
@@ -262,7 +179,7 @@ def _force_salt_for_testing(salt: str, date_iso: str) -> None:
 
 
 def _set_current_ip_for_testing(ip: str | None) -> contextvars.Token:
-    """Set the IP contextvar without going through middleware. Tests only."""
+    """Set the IP context without an HTTP request. Tests only."""
     return _current_ip.set(ip)
 
 

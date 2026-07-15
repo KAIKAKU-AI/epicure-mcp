@@ -30,10 +30,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Ruff
+      - name: Verify bundled model artefacts
+        run: python scripts/verify_data.py --data-dir data
+
+      - name: Ruff lint
         run: ruff check src tests scripts
 
-      - name: Pytest (matcher tests + tool tests using mini fixture)
-        # Tests that require the bundled data directory are skipped
-        # automatically when ``data/`` is absent.
+      - name: Ruff formatting
+        run: ruff format --check src tests scripts
+
+      - name: Pytest
         run: pytest -q
+
+      - name: Build container
+        run: docker build --tag epicure-mcp:ci .

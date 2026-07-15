@@ -84,9 +84,7 @@ def mini_data_dir(tmp_path: Path, monkeypatch) -> Path:
             "new_node_id": range(1, len(names) + 1),
             "final_name": names,
             "node_ids_consolidated": [f"[{i}]" for i in range(1, len(names) + 1)],
-            "original_names_consolidated": [
-                f"['{n}', 'fresh {n}']" for n in names
-            ],
+            "original_names_consolidated": [f"['{n}', 'fresh {n}']" for n in names],
         }
     )
     cn.to_csv(d / "consolidated_nodes.csv", index=False)

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Epicure MCP flavour signal</title>
+  <desc id="description">A refined Epicure E monogram with a warm active signal on a deep culinary green field.</desc>
+
+  <rect width="512" height="512" rx="116" fill="#07110c"/>
+  <rect x="18" y="18" width="476" height="476" rx="101" fill="none" stroke="#dff6cd" stroke-opacity="0.12" stroke-width="4"/>
+
+  <!-- The open orbit keeps the original Epicure E recognisable at 16 px. -->
+  <path
+    d="M366 125H250C174 125 118 181 118 256s56 131 132 131h116"
+    fill="none"
+    stroke="#dff6cd"
+    stroke-width="64"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- A warm signal turns the static monogram into an active MCP endpoint. -->
+  <path d="M247 256h119" fill="none" stroke="#eda982" stroke-width="64" stroke-linecap="round"/>
+  <circle cx="366" cy="256" r="13" fill="#fff7ec"/>
+</svg>

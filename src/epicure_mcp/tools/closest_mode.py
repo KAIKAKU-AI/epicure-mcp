@@ -7,15 +7,10 @@ from typing import Any
 from ..data_loader import get_bundle
 
 DESCRIPTION = (
-    "Use when the user asks what named flavour region an ingredient "
-    "belongs to ('what family is miso in?', 'what cluster does kimchi "
-    "fit?'). Returns the top-k emergent GMM modes that best describe "
-    "the ingredient, each with a Claude-labelled name (e.g. 'East Asian "
-    "umami pantry staples'), cosine similarity to the mode's centroid, "
-    "and the mode's top members. Pass property=... to restrict to one "
-    "axis family (cuisine, sensory, etc.). For 2-D visual placement use "
-    "where_on_atlas instead; for cuisine-only questions use "
-    "cultural_profile."
+    "Returns the emergent GMM regions that best describe one ingredient. "
+    "Each result includes a human-labelled mode, cosine similarity to its "
+    "centroid, dominant cuisine and food group, and representative members. "
+    "An optional property restricts the search to one axis family."
 )
 
 
