@@ -1,5 +1,7 @@
 # Epicure MCP
 
+[![MCP status](https://mcpvitals.com/badge/4997b92450.svg)](https://mcpvitals.com/status/4997b92450)
+
 [Epicure](https://epicure.kaikaku.ai/agents) is a public, anonymous,
 read-only Model Context Protocol server for computational flavour exploration.
 It exposes deterministic tools over 1,790 ingredient embeddings learned from a
