@@ -126,11 +126,7 @@ def main() -> int:
                 for value in json.dumps(cfg).split("${")[1:]:
                     var = value.split("}", 1)[0]
                     variables = manifest.get("variables")
-                    props = (
-                        variables.get("properties", {})
-                        if isinstance(variables, dict)
-                        else {}
-                    )
+                    props = variables.get("properties", {}) if isinstance(variables, dict) else {}
                     if var and var not in props:
                         fail(f"${{{var}}} used in mcp.json but not declared in variables")
                         errors += 1
