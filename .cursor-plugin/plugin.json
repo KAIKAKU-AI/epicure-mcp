@@ -1,0 +1,26 @@
+{
+  "name": "epicure",
+  "displayName": "Epicure",
+  "version": "1.0.0",
+  "description": "Computational flavour intelligence for culinary agents — pairings, substitutions, atlas lookup, and interpretable flavour-space transforms over 1,790 ingredients.",
+  "author": {
+    "name": "KAIKAKU.AI Limited",
+    "email": "hello@kaikaku.ai"
+  },
+  "homepage": "https://epicure.kaikaku.ai/agents",
+  "repository": "https://github.com/KAIKAKU-AI/epicure-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "flavour",
+    "flavor",
+    "culinary",
+    "ingredients",
+    "pairings",
+    "food",
+    "embeddings",
+    "epicure",
+    "kaikaku"
+  ],
+  "logo": "assets/logo.svg"
+}

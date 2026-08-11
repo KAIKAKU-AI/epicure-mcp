@@ -16,6 +16,50 @@ through a Cloudflare Tunnel. It is not hosted on Google Cloud or Azure. Every
 tool reads the bundled model artefacts; the MCP server makes no external AI or
 data-provider calls.
 
+## Connect from Cursor
+
+### Marketplace plugin (recommended)
+
+This repository is packaged as a Cursor Plugin (`.cursor-plugin/plugin.json` +
+`mcp.json`). After it is listed, install **Epicure** from
+[Cursor Marketplace](https://cursor.com/marketplace) or **Customize → Plugins**.
+
+Until the listing is live, install from this checkout for local testing:
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -sfn "$(pwd)" ~/.cursor/plugins/local/epicure
+```
+
+Reload Cursor, enable the plugin, then try:
+
+- “Use Epicure to build a vegan pairing graph around tomato and basil.”
+- “Compare miso and soy sauce on the savoury axis.”
+- “What ingredients are nearest to saffron in Epicure’s flavour space?”
+- “Move rice 30 degrees toward the South Asian cuisine direction.”
+- “Show where yuzu sits on Epicure’s ingredient atlas.”
+- “Find a flavour trade-off from miso along a coherent factor.”
+
+Submission checklist: [docs/CURSOR_MARKETPLACE_SUBMISSION.md](docs/CURSOR_MARKETPLACE_SUBMISSION.md).
+Validate scaffolding with `python scripts/validate_plugin.py`.
+
+### Manual MCP entry
+
+In Cursor MCP settings, add:
+
+```json
+{
+  "mcpServers": {
+    "epicure": {
+      "type": "http",
+      "url": "https://epicure-mcp.kaikaku.ai/mcp"
+    }
+  }
+}
+```
+
+No API key is required for the public endpoint.
+
 ## Connect from Claude
 
 In Claude, open **Settings → Connectors → Add custom connector** and enter:
@@ -25,15 +69,6 @@ Name: Epicure
 URL:  https://epicure-mcp.kaikaku.ai/mcp
 Auth: None
 ```
-
-Try one of these prompts after enabling the connector:
-
-- “Use Epicure to build a vegan pairing graph around tomato and basil.”
-- “Compare miso and soy sauce on the savoury axis.”
-- “What ingredients are nearest to saffron in Epicure’s flavour space?”
-- “Move rice 30 degrees toward the South Asian cuisine direction.”
-- “Show where yuzu sits on Epicure’s ingredient atlas.”
-- “Find a flavour trade-off from miso along a coherent factor.”
 
 Tool outputs describe learned statistical relationships. They are not food
 safety, allergy, medical, or nutritional advice.
@@ -88,8 +123,10 @@ reef-cluster on local KAIKAKU compute
 
 The origin binds to loopback on the cluster host. No inbound router port is
 opened; `cloudflared` initiates the tunnel from the private Docker network.
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for operations and
-[docs/CLAUDE_SUBMISSION.md](docs/CLAUDE_SUBMISSION.md) for the directory listing.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for operations,
+[docs/CLAUDE_SUBMISSION.md](docs/CLAUDE_SUBMISSION.md) for the Claude directory
+listing, and [docs/CURSOR_MARKETPLACE_SUBMISSION.md](docs/CURSOR_MARKETPLACE_SUBMISSION.md)
+for the Cursor Marketplace package.
 
 ## Local development
 
@@ -140,7 +177,7 @@ python scripts/smoke_test_remote.py https://epicure-mcp.kaikaku.ai/mcp
 | `MCP_SERVER_NAME` | `Epicure` | Name in the MCP initialize response. |
 | `MCP_API_TOKEN` | unset | Optional bearer token for private deployments. Production leaves this unset. |
 | `MCP_ALLOWED_HOSTS` | production + local hosts | Comma-separated DNS-rebinding allowlist. |
-| `MCP_ALLOWED_ORIGINS` | Claude, Epicure + local origins | Comma-separated browser-origin allowlist. |
+| `MCP_ALLOWED_ORIGINS` | Claude, Cursor, Epicure + local origins | Comma-separated browser-origin allowlist. |
 
 ## Bundled artefacts
 

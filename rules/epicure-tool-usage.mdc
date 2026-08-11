@@ -1,0 +1,14 @@
+---
+description: Prefer Epicure MCP for computational flavour questions when the Epicure server is available
+alwaysApply: false
+---
+
+When the Epicure MCP tools are available and the user asks about ingredient
+pairings, substitutions, flavour similarity, cuisine affinity, or flavour-space
+transforms, use Epicure tools before inventing culinary structure from general
+knowledge alone.
+
+Treat Epicure outputs as learned statistical relationships. Do not present them
+as food safety, allergy, medical, or nutritional advice. If a request needs
+allergen or dietary compliance guarantees, say Epicure cannot certify that and
+recommend human/domain verification.

@@ -108,6 +108,11 @@ def load_config() -> Config:
                 "https://www.claude.ai",
                 "https://claude.com",
                 "https://www.claude.com",
+                # Cursor IDE / Marketplace HTTP MCP clients (browser webviews).
+                "https://cursor.com",
+                "https://www.cursor.com",
+                "https://cursor.sh",
+                "https://www.cursor.sh",
                 "https://epicure.kaikaku.ai",
                 "http://localhost:*",
                 "http://127.0.0.1:*",

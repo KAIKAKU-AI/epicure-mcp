@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "epicure": {
+      "type": "http",
+      "url": "https://epicure-mcp.kaikaku.ai/mcp"
+    }
+  }
+}

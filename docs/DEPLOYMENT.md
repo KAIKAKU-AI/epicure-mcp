@@ -42,6 +42,21 @@ Cloudflare owns TLS, WAF, DDoS controls, and public edge rate limits. The Python
 service applies its own token bucket, input validation, DNS-rebinding checks,
 optional bearer middleware (disabled publicly), and response security headers.
 
+Default `MCP_ALLOWED_ORIGINS` includes Claude and Cursor browser origins
+(`https://cursor.com`, `https://cursor.sh`, and `www` variants). Desktop MCP
+clients that omit `Origin` continue to work. After changing allowlists, rebuild
+and redeploy only the `mcp` service, then verify with:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' -X POST https://epicure-mcp.kaikaku.ai/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Origin: https://cursor.com' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"cursor","version":"0"}}}'
+```
+
+Expect `200` once the new image is live (was `403` before the Cursor allowlist).
+
 ## Verify
 
 ```bash
