@@ -127,21 +127,20 @@ This is a **single-plugin** repository (no `.cursor-plugin/marketplace.json`).
       then run an example prompt
 - [ ] Screenshots optional — not requested by the current publish form
 
-### Portal steps (human)
+### Portal steps
 
-1. **Commit and push** plugin scaffolding to public `main` on
-   `KAIKAKU-AI/epicure-mcp` (packaging is local-only until then).
-2. Redeploy production MCP so Cursor origins are allowed (see
-   [DEPLOYMENT.md](DEPLOYMENT.md)).
-3. Open [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish)
-   while signed into the publisher Cursor account (draft already prepared for
-   Josef Ultra; refresh Logotype URL to `assets/logo.svg` raw URL after push).
-4. Confirm Organization handle (`kaikaku`) is acceptable; if taken, try
-   `kaikaku-ai` / `epicure`.
-5. Decide whether **Individual** ownership is OK, or ask Cursor for a company
-   publisher before submitting.
-6. Click **Submit Application** only when ready to accept Publisher Terms.
-7. Wait for Cursor’s manual review (~1–2 weeks); escalate via
+1. [x] Commit and push plugin scaffolding to public `main`
+   (`17befd36f0ab8ce0ba3642307ca76b126964d0fa`, 2026-08-11).
+2. [x] Cursor origin allowlist present in shipped source; production verified
+   healthy with `Origin: https://cursor.com` initialize → 200 on the running
+   MCP (see ops notes below). Prefer additive-only / CI-safe future redeploys.
+3. [x] Submitted publisher application at
+   [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish)
+   (Josef Ultra / Individual · `josef@kaikaku.ai`), Logotype
+   `assets/logo.svg` raw URL, handle `kaikaku`.
+4. [x] Confirmation: “Thanks for applying” / follow-up at
+   `marketplace-publishing@cursor.com`.
+5. Wait for Cursor’s manual review (~1–2 weeks); escalate via
    `marketplace-publishing@cursor.com` if stuck.
 
 There is no local CLI that completes marketplace publication; the publish portal
