@@ -42,8 +42,25 @@ Cloudflare owns TLS, WAF, DDoS controls, and public edge rate limits. The Python
 service applies its own token bucket, input validation, DNS-rebinding checks,
 optional bearer middleware (disabled publicly), and response security headers.
 
-Default `MCP_ALLOWED_ORIGINS` includes Claude and Cursor browser origins
-(`https://cursor.com`, `https://cursor.sh`, and `www` variants). Desktop MCP
+Pin the public service to anonymous mode even when the surrounding Compose
+project contains credentials for other services:
+
+```dotenv
+MCP_AUTH_MODE=none
+```
+
+For backward compatibility, `MCP_API_TOKEN` without a mode retains the legacy
+bearer behaviour. New private deployments should opt in with both settings so
+a missing credential fails at startup instead of silently exposing the service:
+
+```dotenv
+MCP_AUTH_MODE=bearer
+MCP_API_TOKEN=<private bearer credential>
+```
+
+Default `MCP_ALLOWED_ORIGINS` includes ChatGPT, Claude, and Cursor browser
+origins (`https://chatgpt.com`, `https://chat.openai.com`,
+`https://cursor.com`, `https://cursor.sh`, and `www` variants). Desktop MCP
 clients that omit `Origin` continue to work. After changing allowlists, rebuild
 and redeploy only the `mcp` service, then verify with:
 
@@ -51,23 +68,25 @@ and redeploy only the `mcp` service, then verify with:
 curl -sS -o /dev/null -w '%{http_code}\n' -X POST https://epicure-mcp.kaikaku.ai/mcp \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
-  -H 'Origin: https://cursor.com' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"cursor","version":"0"}}}'
+  -H 'Origin: https://chatgpt.com' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"chatgpt","version":"0"}}}'
 ```
 
-Expect `200` once the new image is live (was `403` before the Cursor allowlist).
+Expect `200` once the new image is live (was `403` before the ChatGPT allowlist).
 
 ## Verify
 
 ```bash
 curl --fail https://epicure-mcp.kaikaku.ai/healthz
-python scripts/smoke_test_remote.py https://epicure-mcp.kaikaku.ai/mcp
+MCP_AUTH_MODE=none python scripts/smoke_test_remote.py \
+  https://epicure-mcp.kaikaku.ai/mcp
 npx -y @modelcontextprotocol/inspector \
   --cli https://epicure-mcp.kaikaku.ai/mcp \
   --transport http --method tools/list
 ```
 
-Verification is complete only when all 13 tools are discoverable, every tool
+The public smoke test intentionally sends no `Authorization` header. Verification
+is complete only when all 13 tools are discoverable, every tool
 has a title and read-only annotations, the smoke suite succeeds, invalid input
 returns `isError: true`, and `/healthz` remains healthy through the tunnel.
 

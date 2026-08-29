@@ -175,9 +175,10 @@ python scripts/smoke_test_remote.py https://epicure-mcp.kaikaku.ai/mcp
 | `RATE_LIMIT_PER_MINUTE` | `60` | Per-client token refill rate. |
 | `RATE_LIMIT_BURST` | `10` | Per-client burst capacity. |
 | `MCP_SERVER_NAME` | `Epicure` | Name in the MCP initialize response. |
-| `MCP_API_TOKEN` | unset | Optional bearer token for private deployments. Production leaves this unset. |
+| `MCP_AUTH_MODE` | `none` | Authentication mode: anonymous `none`, or explicit `bearer` for a private deployment. |
+| `MCP_API_TOKEN` | unset | Bearer credential required when `MCP_AUTH_MODE=bearer`. For backward compatibility, a token with no mode retains legacy bearer auth; public deployments must pin `MCP_AUTH_MODE=none`. |
 | `MCP_ALLOWED_HOSTS` | production + local hosts | Comma-separated DNS-rebinding allowlist. |
-| `MCP_ALLOWED_ORIGINS` | Claude, Cursor, Epicure + local origins | Comma-separated browser-origin allowlist. |
+| `MCP_ALLOWED_ORIGINS` | ChatGPT, Claude, Cursor, Epicure + local origins | Comma-separated browser-origin allowlist. |
 
 ## Bundled artefacts
 

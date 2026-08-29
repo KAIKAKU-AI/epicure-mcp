@@ -54,6 +54,7 @@ async def test_healthz_and_initialize() -> None:
 
 @pytest.mark.anyio
 async def test_bearer_authentication(monkeypatch) -> None:
+    monkeypatch.setenv("MCP_AUTH_MODE", "bearer")
     monkeypatch.setenv("MCP_API_TOKEN", "test-mcp-bearer-token")
     app = build_app()
     async with LifespanManager(app) as manager:
@@ -100,6 +101,34 @@ async def test_bearer_authentication(monkeypatch) -> None:
             )
             assert atlas.status_code == 200
             assert atlas.json()["dimensions"] == 3
+
+
+@pytest.mark.anyio
+async def test_explicit_public_mode_accepts_chatgpt_with_inherited_token(monkeypatch) -> None:
+    monkeypatch.setenv("MCP_AUTH_MODE", "none")
+    monkeypatch.setenv("MCP_API_TOKEN", "inherited-shared-secret")
+    app = build_app()
+    async with LifespanManager(app) as manager:
+        transport = httpx.ASGITransport(app=manager.app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://localhost") as client:
+            response = await client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2025-06-18",
+                        "capabilities": {},
+                        "clientInfo": {"name": "pytest", "version": "0.1"},
+                    },
+                },
+                headers={**JSONRPC_HEADERS, "Origin": "https://chatgpt.com"},
+            )
+
+            assert response.status_code == 200
+            assert "www-authenticate" not in response.headers
+            assert "result" in _decode(response.text)
 
 
 async def _run_session(transport: httpx.ASGITransport) -> None:

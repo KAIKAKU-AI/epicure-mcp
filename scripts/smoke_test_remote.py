@@ -44,8 +44,16 @@ SAMPLE_CALLS: list[tuple[str, dict]] = [
 
 
 async def run(url: str) -> int:
-    token = os.environ.get("MCP_API_TOKEN", "").strip()
-    headers = {"Authorization": f"Bearer {token}"} if token else None
+    auth_mode = os.environ.get("MCP_AUTH_MODE", "none").strip().lower() or "none"
+    if auth_mode == "none":
+        headers = None
+    elif auth_mode == "bearer":
+        token = os.environ.get("MCP_API_TOKEN", "").strip()
+        if not token:
+            raise RuntimeError("MCP_API_TOKEN is required when MCP_AUTH_MODE=bearer")
+        headers = {"Authorization": f"Bearer {token}"}
+    else:
+        raise RuntimeError("MCP_AUTH_MODE must be either 'none' or 'bearer'")
     async with streamablehttp_client(url, headers=headers) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()

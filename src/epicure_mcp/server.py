@@ -233,7 +233,13 @@ def main() -> None:
         format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     )
     cfg = load_config()
-    log.info("starting epicure-mcp on %s:%d (data_dir=%s)", cfg.host, cfg.port, cfg.data_dir)
+    log.info(
+        "starting epicure-mcp on %s:%d (data_dir=%s, auth_mode=%s)",
+        cfg.host,
+        cfg.port,
+        cfg.data_dir,
+        cfg.auth_mode,
+    )
     app = build_app(cfg)
     uvicorn.run(app, host=cfg.host, port=cfg.port, log_level="info")
 
