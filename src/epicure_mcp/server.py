@@ -121,6 +121,15 @@ def _build_mcp(cfg: Config, favicon_bytes: bytes | None) -> FastMCP:
         host=cfg.host,
         port=cfg.port,
         icons=icons,
+        # Stateless HTTP: this server holds no per-session state (every tool
+        # call is a pure function of its args + the bundled artefacts), and the
+        # Container Apps deployment runs multiple replicas with no session
+        # affinity. Without stateless mode FastMCP issues an mcp-session-id on
+        # initialize that lives in one replica's memory; a spec-compliant
+        # client's follow-up requests (the SSE GET stream / subsequent POSTs)
+        # then hit another replica and get -32600 "Session not found", which
+        # breaks every real MCP client. See issue #5.
+        stateless_http=True,
     )
     register_all(server)
     return server
