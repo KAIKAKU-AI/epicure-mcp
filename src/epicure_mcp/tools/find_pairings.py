@@ -7,6 +7,8 @@ metadata. The algorithm is a direct port of the new-epicure paper-branch
 
 from __future__ import annotations
 
+from typing import cast
+
 from ..data_loader import get_bundle
 from ..pairings import find_pairings as _find_pairings
 
@@ -37,4 +39,4 @@ def run(
     )
     if "error" in result:
         return f"Error: {result['error']}"
-    return result["text"]
+    return cast(str, result["text"])

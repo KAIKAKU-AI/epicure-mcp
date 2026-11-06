@@ -139,6 +139,8 @@ async def _run_session(transport: httpx.ASGITransport) -> None:
         assert health.status_code == 200
         assert health.json() == {"status": "ok"}
         assert health.headers["x-content-type-options"] == "nosniff"
+        assert health.headers["x-frame-options"] == "DENY"
+        assert "frame-ancestors 'none'" in health.headers["content-security-policy"]
         assert health.headers["referrer-policy"] == "no-referrer"
         assert "max-age=63072000" in health.headers["strict-transport-security"]
 

@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
 _DEFAULT_DATA_DIR = _PACKAGE_ROOT.parent.parent / "data"
 _AUTH_MODES = frozenset({"none", "bearer"})
+DEFAULT_EXPLORATORY_RELEASE_ID = "exploratory-unmatched-1790-runtime"
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -23,6 +26,8 @@ class Config:
     api_token: str | None = None
     allowed_hosts: tuple[str, ...] = ()
     allowed_origins: tuple[str, ...] = ()
+    release_id: str = DEFAULT_EXPLORATORY_RELEASE_ID
+    application_sha256: str | None = None
 
     @property
     def embeddings_csv(self) -> Path:
@@ -107,6 +112,15 @@ def _auth_settings() -> tuple[str, str | None]:
     return mode, token
 
 
+def _env_sha256(key: str) -> str | None:
+    raw = os.environ.get(key, "").strip().lower()
+    if not raw:
+        return None
+    if not _SHA256_RE.fullmatch(raw):
+        raise ValueError(f"{key} must be a 64-character hexadecimal SHA-256")
+    return raw
+
+
 def load_config() -> Config:
     auth_mode, api_token = _auth_settings()
     return Config(
@@ -116,6 +130,11 @@ def load_config() -> Config:
         rate_limit_per_minute=_env_int("RATE_LIMIT_PER_MINUTE", 60),
         rate_limit_burst=_env_int("RATE_LIMIT_BURST", 10),
         server_name=os.environ.get("MCP_SERVER_NAME", "Epicure"),
+        release_id=(
+            os.environ.get("EPICURE_RELEASE_ID", DEFAULT_EXPLORATORY_RELEASE_ID).strip()
+            or DEFAULT_EXPLORATORY_RELEASE_ID
+        ),
+        application_sha256=_env_sha256("EPICURE_APPLICATION_SHA256"),
         auth_mode=auth_mode,
         api_token=api_token,
         allowed_hosts=_env_csv(

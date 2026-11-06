@@ -15,7 +15,7 @@ The ``target`` payload is a discriminated union:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -36,9 +36,9 @@ def _to_dict(target: Any) -> dict[str, Any]:
     """Accept either a Pydantic model (from FastMCP-validated input) or a
     raw dict (from in-process test calls / older clients)."""
     if hasattr(target, "model_dump"):
-        return target.model_dump()
+        return cast(dict[str, Any], target.model_dump())
     if isinstance(target, dict):
-        return target
+        return cast(dict[str, Any], target)
     return {}
 
 
@@ -54,7 +54,7 @@ def _resolve_target(target: Any) -> tuple[np.ndarray | None, dict[str, Any]]:
             return None, {
                 "error": f"Unknown direction '{name}'. Call list_targets() to see valid names.",
             }
-        return bundle.directions[name], {"resolved_target": f"direction:{name}"}
+        return cast(np.ndarray, bundle.directions[name]), {"resolved_target": f"direction:{name}"}
 
     if kind == "mode":
         prop = target.get("property")
@@ -75,7 +75,7 @@ def _resolve_target(target: Any) -> tuple[np.ndarray | None, dict[str, Any]]:
             (m.label for m in modes_list if m.mode_id == mid),
             f"{prop}/M{mid}",
         )
-        return bundle.modes.pole_vectors[idx], {
+        return cast(np.ndarray, bundle.modes.pole_vectors[idx]), {
             "resolved_target": f"mode:{prop}/M{mid}",
             "mode_label": label,
         }
@@ -88,7 +88,7 @@ def _resolve_target(target: Any) -> tuple[np.ndarray | None, dict[str, Any]]:
         if m is None:
             return None, {"error": f"Could not resolve ingredient target '{name}'"}
         row = bundle.ingredients.nid_to_row[m.node_id]
-        return bundle.ingredients.normed[row], {
+        return cast(np.ndarray, bundle.ingredients.normed[row]), {
             "resolved_target": f"ingredient:{m.name}",
         }
 

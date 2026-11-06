@@ -1,8 +1,9 @@
 """MCP server bootstrap.
 
-Exposes the Streamable HTTP MCP endpoint at ``/mcp``, a read-only ``/atlas``
-projection, and a ``/healthz`` probe. Optional bearer authentication and the
-token-bucket rate limiter are applied to every non-health request.
+Exposes the Streamable HTTP MCP endpoint at ``/mcp``, read-only ``/atlas`` and
+``/provenance`` resources, and a ``/healthz`` probe. Optional bearer
+authentication and the token-bucket rate limiter are applied to every
+non-health request.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from starlette.routing import Mount, Route
 from .analytics import ClientContextMiddleware
 from .auth import BearerAuthMiddleware
 from .config import Config, load_config
+from .provenance import ProvenanceError, build_provenance_payload
 from .ratelimit import RateLimitMiddleware
 from .security import SecurityHeadersMiddleware
 from .tools import register_all
@@ -192,6 +194,35 @@ def _atlas_endpoint(cfg: Config):
     return _serve
 
 
+def _provenance_endpoint(cfg: Config):
+    async def _serve(request: Request) -> JSONResponse:
+        try:
+            payload = build_provenance_payload(
+                str(cfg.data_dir.resolve()),
+                cfg.release_id,
+                cfg.application_sha256,
+                str(Path(__file__).resolve().parent),
+            )
+        except (OSError, ProvenanceError) as exc:
+            log.exception("runtime provenance unavailable: %s", exc)
+            return JSONResponse(
+                {"error": "provenance_unavailable"},
+                status_code=503,
+                headers={"Cache-Control": "no-store"},
+            )
+        return JSONResponse(payload, headers={"Cache-Control": "no-store"})
+
+    return _serve
+
+
+async def _provenance_method_not_allowed(_request: Request) -> JSONResponse:
+    return JSONResponse(
+        {"error": "read_only_endpoint"},
+        status_code=405,
+        headers={"Allow": "GET, HEAD", "Cache-Control": "no-store"},
+    )
+
+
 def build_app(cfg: Config | None = None) -> Starlette:
     cfg = cfg or load_config()
     favicon_bytes = _load_favicon_bytes()
@@ -199,10 +230,17 @@ def build_app(cfg: Config | None = None) -> Starlette:
     mcp_app = mcp.streamable_http_app()
     favicon = _favicon_endpoint(favicon_bytes)
     atlas = _atlas_endpoint(cfg)
+    provenance = _provenance_endpoint(cfg)
     routes: list[Any] = [
         Route("/healthz", endpoint=_healthz, methods=["GET"]),
         Route("/favicon.ico", endpoint=favicon, methods=["GET"]),
         Route("/favicon.png", endpoint=favicon, methods=["GET"]),
+        Route("/provenance", endpoint=provenance, methods=["GET"]),
+        Route(
+            "/provenance",
+            endpoint=_provenance_method_not_allowed,
+            methods=["POST", "PUT", "PATCH", "DELETE"],
+        ),
         Route("/atlas", endpoint=atlas, methods=["GET"]),
         Mount("/", app=mcp_app),
     ]

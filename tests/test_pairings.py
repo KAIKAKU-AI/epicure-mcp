@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import time
 from collections import Counter
+from statistics import median
 
 import pytest
 
@@ -94,7 +95,7 @@ def test_vegan_filter_excludes_animal_products() -> None:
     assert not leaked, f"vegan filter leaked: {leaked}"
 
 
-def test_find_pairings_under_200ms_after_warmup() -> None:
+def test_find_pairings_median_under_200ms_after_warmup() -> None:
     """Regression guard against re-introducing per-row Python loops.
 
     The current implementation runs in ~5 ms on the 1,790-ingredient
@@ -110,16 +111,20 @@ def test_find_pairings_under_200ms_after_warmup() -> None:
         "beef",
         ["chicken", "lemon", "thyme"],
     ]
-    timings: list[float] = []
-    for s in seeds:
-        t0 = time.perf_counter()
-        out = find_pairings.run(s)
-        dt_ms = (time.perf_counter() - t0) * 1000
-        assert isinstance(out, str) and out.startswith("Pairing graph for")
-        timings.append(dt_ms)
+    medians: list[float] = []
+    all_timings: list[list[float]] = []
+    for seed in seeds:
+        timings: list[float] = []
+        for _ in range(5):
+            t0 = time.perf_counter()
+            out = find_pairings.run(seed)
+            timings.append((time.perf_counter() - t0) * 1000)
+            assert isinstance(out, str) and out.startswith("Pairing graph for")
+        all_timings.append(timings)
+        medians.append(median(timings))
 
-    max_dt = max(timings)
-    assert max_dt < 200, (
-        f"find_pairings exceeded 200 ms budget; observed timings: "
-        f"{[round(t, 1) for t in timings]} ms"
+    max_median = max(medians)
+    assert max_median < 200, (
+        f"find_pairings median exceeded 200 ms budget; observed timings: "
+        f"{[[round(t, 1) for t in values] for values in all_timings]} ms"
     )

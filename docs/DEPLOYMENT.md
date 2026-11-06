@@ -38,6 +38,20 @@ logging:
     max-file: "2"
 ```
 
+Set a release label and immutable application digest for every governed
+deployment. The current unmatched bundle must retain an exploratory label
+unless and until its lineage is separately resolved:
+
+```dotenv
+EPICURE_RELEASE_ID=exploratory-unmatched-1790-runtime
+EPICURE_APPLICATION_SHA256=<64-character immutable build or image digest>
+```
+
+If `EPICURE_APPLICATION_SHA256` is omitted, `/provenance` intentionally labels
+the deterministic installed-source hash as development. Private benchmark
+deployments also set `MCP_AUTH_MODE=bearer` and `MCP_API_TOKEN`; that protects
+`/provenance`, `/mcp`, and `/atlas` with the same bearer token.
+
 Cloudflare owns TLS, WAF, DDoS controls, and public edge rate limits. The Python
 service applies its own token bucket, input validation, DNS-rebinding checks,
 optional bearer middleware (disabled publicly), and response security headers.
@@ -78,6 +92,7 @@ Expect `200` once the new image is live (was `403` before the ChatGPT allowlist)
 
 ```bash
 curl --fail https://epicure-mcp.kaikaku.ai/healthz
+curl --fail https://epicure-mcp.kaikaku.ai/provenance
 MCP_AUTH_MODE=none python scripts/smoke_test_remote.py \
   https://epicure-mcp.kaikaku.ai/mcp
 npx -y @modelcontextprotocol/inspector \
@@ -85,10 +100,13 @@ npx -y @modelcontextprotocol/inspector \
   --transport http --method tools/list
 ```
 
-The public smoke test intentionally sends no `Authorization` header. Verification
-is complete only when all 13 tools are discoverable, every tool
-has a title and read-only annotations, the smoke suite succeeds, invalid input
-returns `isError: true`, and `/healthz` remains healthy through the tunnel.
+The public smoke test intentionally sends no `Authorization` header. For a
+private deployment, add `Authorization: Bearer $MCP_API_TOKEN` to the
+provenance request. Verification is complete only when all 13 tools are
+discoverable, every tool has a title and read-only annotations, the smoke suite
+succeeds, invalid input returns `isError: true`, `/healthz` remains healthy
+through the tunnel, and `/provenance` reports the expected release, bundle, and
+application hashes.
 
 ## Roll back
 

@@ -1,0 +1,864 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/annotated-doc@0.0.4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "571ac1dc6991c450b25a9c2d84a3705e2ae7a53467b5d111c24fa8baabbed320"
+        }
+      ],
+      "name": "annotated-doc",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/annotated-doc@0.0.4",
+      "scope": "required",
+      "type": "library",
+      "version": "0.0.4"
+    },
+    {
+      "bom-ref": "pkg:pypi/annotated-types@0.7.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"
+        }
+      ],
+      "name": "annotated-types",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/annotated-types@0.7.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.7.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/anyio@4.14.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9f505dda5ac9f0c8309b5e8bd445a8c2bf7246f3ce950121e45ea15bc41d1494"
+        }
+      ],
+      "name": "anyio",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/anyio@4.14.2",
+      "scope": "required",
+      "type": "library",
+      "version": "4.14.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/attrs@26.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309"
+        }
+      ],
+      "name": "attrs",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/attrs@26.1.0",
+      "scope": "required",
+      "type": "library",
+      "version": "26.1.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/certifi@2026.6.17",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2227dcbaafe0d2f59279d1762ddddc37783ed4354594f194ffc31d20f41fc3db"
+        }
+      ],
+      "name": "certifi",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/certifi@2026.6.17",
+      "scope": "required",
+      "type": "library",
+      "version": "2026.6.17"
+    },
+    {
+      "bom-ref": "pkg:pypi/cffi@2.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1e9f50d192a3e525b15a75ab5114e442d83d657b7ec29182a991bc9a88fd3a66"
+        }
+      ],
+      "name": "cffi",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/cffi@2.1.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/click@8.4.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76"
+        }
+      ],
+      "name": "click",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/click@8.4.2",
+      "scope": "required",
+      "type": "library",
+      "version": "8.4.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/cryptography@49.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cbc77da8c523d5abd028635ba850a6966fcee2c82e2bf65a41d1d8afe0f98be9"
+        }
+      ],
+      "name": "cryptography",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/cryptography@49.0.0",
+      "scope": "required",
+      "type": "library",
+      "version": "49.0.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/h11@0.16.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"
+        }
+      ],
+      "name": "h11",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/h11@0.16.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.16.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/httpcore@1.0.9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"
+        }
+      ],
+      "name": "httpcore",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/httpcore@1.0.9",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.9"
+    },
+    {
+      "bom-ref": "pkg:pypi/httpx@0.28.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"
+        }
+      ],
+      "name": "httpx",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/httpx@0.28.1",
+      "scope": "required",
+      "type": "library",
+      "version": "0.28.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/httpx-sse@0.4.3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0ac1c9fe3c0afad2e0ebb25a934a59f4c7823b60792691f779fad2c5568830fc"
+        }
+      ],
+      "name": "httpx-sse",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/httpx-sse@0.4.3",
+      "scope": "required",
+      "type": "library",
+      "version": "0.4.3"
+    },
+    {
+      "bom-ref": "pkg:pypi/idna@3.18",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7f952cbe720b688055e3f87de14f5c3e5fdaa8bc3928985c4077ca689de849a2"
+        }
+      ],
+      "name": "idna",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/idna@3.18",
+      "scope": "required",
+      "type": "library",
+      "version": "3.18"
+    },
+    {
+      "bom-ref": "pkg:pypi/jsonschema@4.26.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce"
+        }
+      ],
+      "name": "jsonschema",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/jsonschema@4.26.0",
+      "scope": "required",
+      "type": "library",
+      "version": "4.26.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/jsonschema-specifications@2025.9.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe"
+        }
+      ],
+      "name": "jsonschema-specifications",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/jsonschema-specifications@2025.9.1",
+      "scope": "required",
+      "type": "library",
+      "version": "2025.9.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/markdown-it-py@4.2.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a"
+        }
+      ],
+      "name": "markdown-it-py",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/markdown-it-py@4.2.0",
+      "scope": "required",
+      "type": "library",
+      "version": "4.2.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/mcp@1.28.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2726bca5e7193f61c5dde8b12500a6de2d9acf6d1a1c0be9e8c2e706437991df"
+        }
+      ],
+      "name": "mcp",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/mcp@1.28.1",
+      "scope": "required",
+      "type": "library",
+      "version": "1.28.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/mdurl@0.1.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"
+        }
+      ],
+      "name": "mdurl",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/mdurl@0.1.2",
+      "scope": "required",
+      "type": "library",
+      "version": "0.1.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/numpy@2.4.6",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "90f9849678c75fe7afa2d348ac842c168b0a4d3d61919687216dfc547976d853"
+        }
+      ],
+      "name": "numpy",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/numpy@2.4.6",
+      "scope": "required",
+      "type": "library",
+      "version": "2.4.6"
+    },
+    {
+      "bom-ref": "pkg:pypi/orjson@3.11.9",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "be4fa4f0af7fa18951f7ab3fc2148e223af211bf03f59e1c6034ec3f97f21d61"
+        }
+      ],
+      "name": "orjson",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/orjson@3.11.9",
+      "scope": "required",
+      "type": "library",
+      "version": "3.11.9"
+    },
+    {
+      "bom-ref": "pkg:pypi/pandas@3.0.3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6dc0b3fd2169c9157deed50b4d519553a3655c8c6a96027136d654592be973a9"
+        }
+      ],
+      "name": "pandas",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pandas@3.0.3",
+      "scope": "required",
+      "type": "library",
+      "version": "3.0.3"
+    },
+    {
+      "bom-ref": "pkg:pypi/pycparser@3.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"
+        }
+      ],
+      "name": "pycparser",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pycparser@3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "3.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/pydantic@2.13.4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "45a282cde31d808236fd7ea9d919b128653c8b38b393d1c4ab335c62924d9aba"
+        }
+      ],
+      "name": "pydantic",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pydantic@2.13.4",
+      "scope": "required",
+      "type": "library",
+      "version": "2.13.4"
+    },
+    {
+      "bom-ref": "pkg:pypi/pydantic-core@2.46.4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "926c9541b14b12b1681dca8a0b75feb510b06c6341b70a8e500c2fdcff837cce"
+        }
+      ],
+      "name": "pydantic-core",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pydantic-core@2.46.4",
+      "scope": "required",
+      "type": "library",
+      "version": "2.46.4"
+    },
+    {
+      "bom-ref": "pkg:pypi/pydantic-settings@2.14.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a20c97b37910b6550d5ea50fbcc2d4187defe58cd57070b73863d069419c9440"
+        }
+      ],
+      "name": "pydantic-settings",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pydantic-settings@2.14.2",
+      "scope": "required",
+      "type": "library",
+      "version": "2.14.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/pygments@2.20.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176"
+        }
+      ],
+      "name": "pygments",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pygments@2.20.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.20.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/pyjwt@2.13.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "66adcc2aff09b3f1bbd95fc1e1577df8ac8723c978552fd43304c8a290ac5728"
+        }
+      ],
+      "name": "pyjwt",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/pyjwt@2.13.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.13.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/python-dateutil@2.9.0.post0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"
+        }
+      ],
+      "name": "python-dateutil",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/python-dateutil@2.9.0.post0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.9.0.post0"
+    },
+    {
+      "bom-ref": "pkg:pypi/python-dotenv@1.2.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a"
+        }
+      ],
+      "name": "python-dotenv",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/python-dotenv@1.2.2",
+      "scope": "required",
+      "type": "library",
+      "version": "1.2.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/python-multipart@0.0.32",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ff6d3f776f16878c894e52e107296ffc890e913c611b1a4ec6c44e2821fe2e23"
+        }
+      ],
+      "name": "python-multipart",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/python-multipart@0.0.32",
+      "scope": "required",
+      "type": "library",
+      "version": "0.0.32"
+    },
+    {
+      "bom-ref": "pkg:pypi/referencing@0.37.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231"
+        }
+      ],
+      "name": "referencing",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/referencing@0.37.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.37.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/rich@15.0.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb"
+        }
+      ],
+      "name": "rich",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/rich@15.0.0",
+      "scope": "required",
+      "type": "library",
+      "version": "15.0.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/rpds-py@2026.6.3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ecabd69db66de867690f9797f2f8fa27ba501bbc24540cbdbdc649cd15888ba6"
+        }
+      ],
+      "name": "rpds-py",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/rpds-py@2026.6.3",
+      "scope": "required",
+      "type": "library",
+      "version": "2026.6.3"
+    },
+    {
+      "bom-ref": "pkg:pypi/shellingham@1.5.4",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686"
+        }
+      ],
+      "name": "shellingham",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/shellingham@1.5.4",
+      "scope": "required",
+      "type": "library",
+      "version": "1.5.4"
+    },
+    {
+      "bom-ref": "pkg:pypi/six@1.17.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+        }
+      ],
+      "name": "six",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/six@1.17.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.17.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/sse-starlette@3.4.5",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e71bad53323f65573c3864a6c3bd0c1eb6e5f092b2e48082b0c35927d19ca296"
+        }
+      ],
+      "name": "sse-starlette",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/sse-starlette@3.4.5",
+      "scope": "required",
+      "type": "library",
+      "version": "3.4.5"
+    },
+    {
+      "bom-ref": "pkg:pypi/starlette@1.3.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6"
+        }
+      ],
+      "name": "starlette",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/starlette@1.3.1",
+      "scope": "required",
+      "type": "library",
+      "version": "1.3.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/typer@0.26.8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3512ca79ac5c11113414b36e80281b872884477722440691c89d1112e321a49c"
+        }
+      ],
+      "name": "typer",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/typer@0.26.8",
+      "scope": "required",
+      "type": "library",
+      "version": "0.26.8"
+    },
+    {
+      "bom-ref": "pkg:pypi/typing-extensions@4.16.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+        }
+      ],
+      "name": "typing-extensions",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "scope": "required",
+      "type": "library",
+      "version": "4.16.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/typing-inspection@0.4.2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7"
+        }
+      ],
+      "name": "typing-inspection",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/typing-inspection@0.4.2",
+      "scope": "required",
+      "type": "library",
+      "version": "0.4.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/uvicorn@0.51.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5d38af6cd620f2ae3849fb44fd4879e0890aa1febe8d47eb355fb45d93fe6a5b"
+        }
+      ],
+      "name": "uvicorn",
+      "properties": [
+        {
+          "name": "epicure:hash-subject",
+          "value": "selected distribution wheel"
+        }
+      ],
+      "purl": "pkg:pypi/uvicorn@0.51.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.51.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:pypi/mcp@1.28.1",
+        "pkg:pypi/numpy@2.4.6",
+        "pkg:pypi/orjson@3.11.9",
+        "pkg:pypi/pandas@3.0.3",
+        "pkg:pypi/pydantic@2.13.4",
+        "pkg:pypi/starlette@1.3.1",
+        "pkg:pypi/uvicorn@0.51.0"
+      ],
+      "ref": "pkg:pypi/epicure-mcp@1.0.0"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:pypi/epicure-mcp@1.0.0",
+      "name": "epicure-mcp",
+      "purl": "pkg:pypi/epicure-mcp@1.0.0",
+      "type": "application",
+      "version": "1.0.0"
+    },
+    "properties": [
+      {
+        "name": "epicure:lock-sha256",
+        "value": "86fce704f665270d18a48812b489c651efc8a5688637fa7e89fcd641b9b8d5f1"
+      },
+      {
+        "name": "epicure:target",
+        "value": "CPython 3.12 / Linux x86_64 / manylinux-compatible glibc"
+      },
+      {
+        "name": "epicure:scope",
+        "value": "runtime dependencies; project source and data are separately manifested"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}
