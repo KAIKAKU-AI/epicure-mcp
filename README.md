@@ -211,6 +211,15 @@ a published application release. Likewise, the default
 `exploratory-unmatched-1790-runtime` label intentionally does not identify the
 bundled vectors as any public Cooc, Core, or Chem sibling.
 
+### Private reconstruction evidence
+
+The platform-scoped dependency lock, CycloneDX SBOM, offline reinstall
+verifier, and explicit evidence boundary are documented in
+[`reproducibility/README.md`](reproducibility/README.md). These materials bind
+the observed local dependency environment without claiming recovered training
+lineage, payload redistribution rights, independent reproduction, or an OCI
+image digest.
+
 ## License
 
 [MIT](LICENSE) © KAIKAKU.AI Limited.

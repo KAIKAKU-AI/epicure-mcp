@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-# --- Stage 1: build a wheel + isolated dependency tree ----------------------
+# --- Stage 1: install the sealed runtime dependency tree --------------------
 FROM python:3.12-slim AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -9,31 +9,30 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 
 WORKDIR /build
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential \
-    && rm -rf /var/lib/apt/lists/*
+COPY reproducibility/runtime-linux-x86_64-cp312.lock ./runtime.lock
 
-COPY pyproject.toml README.md LICENSE ./
-COPY src ./src
-
-RUN pip install --upgrade pip build wheel \
-    && pip wheel --wheel-dir /wheels .
-
-RUN pip install --prefix /install --no-warn-script-location /wheels/*.whl
+RUN pip install \
+    --prefix /install \
+    --no-warn-script-location \
+    --require-hashes \
+    -r runtime.lock
 
 # --- Stage 2: minimal runtime image ----------------------------------------
 FROM python:3.12-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
     HOST=0.0.0.0 \
     PORT=8080 \
-    EPICURE_DATA_DIR=/app/data
+    EPICURE_DATA_DIR=/app/data \
+    EPICURE_RELEASE_ID=exploratory-unmatched-1790-runtime
 
 WORKDIR /app
 
 COPY --from=builder /install /usr/local
 
+COPY src /app/src
 COPY data /app/data
 COPY assets /app/assets
 
