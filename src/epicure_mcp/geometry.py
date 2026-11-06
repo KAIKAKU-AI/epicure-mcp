@@ -6,6 +6,7 @@ Ported from `eval/tools.py` and `application/paper/02_direction_arithmetic.py`.
 from __future__ import annotations
 
 import math
+from typing import cast
 
 import numpy as np
 
@@ -14,7 +15,7 @@ def unit(v: np.ndarray) -> np.ndarray:
     norm = np.linalg.norm(v)
     if norm == 0:
         return v.astype(np.float32, copy=False)
-    return (v / norm).astype(np.float32, copy=False)
+    return cast(np.ndarray, (v / norm).astype(np.float32, copy=False))
 
 
 def slerp(seed: np.ndarray, direction: np.ndarray, angle_deg: float) -> np.ndarray:
