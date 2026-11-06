@@ -148,6 +148,7 @@ The local endpoints are:
 | --- | --- | --- |
 | `/healthz` | GET | Lightweight liveness probe. |
 | `/mcp` | POST/GET/DELETE | Streamable HTTP MCP transport. |
+| `/provenance` | GET | Content-addressed runtime bundle and application identity. |
 | `/atlas` | GET | Read-only 3-D UMAP projection used by the Epicure site. |
 | `/favicon.ico`, `/favicon.png` | GET | Connector icon. |
 
@@ -170,6 +171,8 @@ python scripts/smoke_test_remote.py https://epicure-mcp.kaikaku.ai/mcp
 | --- | --- | --- |
 | `EPICURE_DATA_DIR` | `<repo>/data` | Bundled artefact directory. |
 | `EPICURE_ASSETS_DIR` | bundled assets | Optional favicon directory. |
+| `EPICURE_RELEASE_ID` | `exploratory-unmatched-1790-runtime` | Runtime release label. The default deliberately does not claim identity with a public Cooc, Core, or Chem release. |
+| `EPICURE_APPLICATION_SHA256` | unset | Optional 64-character digest for an immutable application or image build. Without it, `/provenance` returns a deterministic installed-source hash labelled `development_source_manifest`. |
 | `HOST` | `0.0.0.0` | Bind address. |
 | `PORT` | `8080` | Bind port. |
 | `RATE_LIMIT_PER_MINUTE` | `60` | Per-client token refill rate. |
@@ -186,6 +189,27 @@ The repository includes the model bundle, so production does not depend on an
 upstream service at runtime. It contains embeddings and ingredient metadata,
 supervised directions, ICA factors, GMM modes, and 2-D/3-D UMAP projections.
 Validate shape and presence with `scripts/verify_data.py` after any refresh.
+
+### Runtime provenance
+
+`GET /provenance` returns the exact runtime identity used by benchmark clients:
+the configured release label, ingredient count and embedding dimensions, a
+canonical manifest of every bundled data file, the manifest-derived bundle
+SHA-256, and the application SHA-256. The data manifest is sorted by relative
+POSIX path and records each file's byte count and SHA-256; the bundle digest is
+the SHA-256 of its canonical JSON representation.
+
+When bearer authentication is enabled, `/provenance` requires the same bearer
+token as `/mcp` and `/atlas`. Responses are always `Cache-Control: no-store`. The
+endpoint is GET-only and does not load or mutate the embedding model.
+
+Release deployments should set `EPICURE_APPLICATION_SHA256` from an immutable
+image or application build. If it is absent, Epicure hashes the installed
+Python files deterministically and marks the result as a development identity.
+That fallback is useful for local and exploratory runs, but is not evidence of
+a published application release. Likewise, the default
+`exploratory-unmatched-1790-runtime` label intentionally does not identify the
+bundled vectors as any public Cooc, Core, or Chem sibling.
 
 ## License
 
